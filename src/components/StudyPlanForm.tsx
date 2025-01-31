@@ -6,10 +6,28 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 
+interface StudyPlan {
+  overview: {
+    subject: string;
+    duration: string;
+    examDate: string;
+  };
+  weeklyPlans: Array<{
+    week: string;
+    goals: string[];
+    dailyTasks: Array<{
+      day: string;
+      tasks: string[];
+      duration: string;
+    }>;
+  }>;
+  recommendations: string[];
+}
+
 export default function StudyPlanForm() {
   const [subject, setSubject] = useState('');
   const [examDate, setExamDate] = useState('');
-  const [plan, setPlan] = useState('');
+  const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
 

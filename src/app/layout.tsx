@@ -2,8 +2,6 @@ import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
-import { CopilotKit } from "@copilotkit/react-core";
-import "@copilotkit/react-ui/styles.css";
 import { Header } from "@/components/Header";
 import { Footer } from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react"
@@ -35,7 +33,6 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4FFC3]`}>
-        <CopilotKit runtimeUrl="/api/copilotkit">
           <div className="flex flex-col min-h-screen">
             <Header />
             <main className="flex-1 container mx-auto px-4 py-16 mb-16">
@@ -45,7 +42,6 @@ export default function RootLayout({
             <Footer />
           </div>
           <Toaster />
-        </CopilotKit>
       </body>
     </html>
   );

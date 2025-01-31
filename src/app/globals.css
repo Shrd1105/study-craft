@@ -33,14 +33,6 @@
     --ring: 84 100% 72%;
  
     --radius: 1rem;
-
-    /* CopilotKit custom properties */
-    --copilot-kit-primary-color: #c1ff72;
-    --copilot-kit-background-color: #F4FFC3;
-    --copilot-kit-text-color: #222222;
-    --copilot-kit-border-color: #000000;
-    --copilot-kit-hover-color: #b1ef62;
-    --copilot-kit-secondary-color: #A9C46C;
   }
  
   .dark {
@@ -150,42 +142,3 @@ body {
   @apply focus:outline-none focus:ring-2 focus:ring-[#c1ff72] focus:ring-offset-2 focus:ring-offset-white;
 }
 
-/* Add CopilotKit specific styles */
-.copilotkit-popup {
-  background-color: var(--copilot-kit-background-color) !important;
-  border: 2px solid var(--copilot-kit-border-color) !important;
-  border-bottom-width: 4px !important;
-  border-right-width: 4px !important;
-  border-radius: 12px !important;
-}
-
-.copilotkit-popup-header {
-  background-color: var(--copilot-kit-primary-color) !important;
-  color: var(--copilot-kit-text-color) !important;
-}
-
-.copilotkit-popup-content {
-  color: var(--copilot-kit-text-color) !important;
-}
-
-.copilotkit-popup-input {
-  border: 2px solid var(--copilot-kit-border-color) !important;
-  border-bottom-width: 4px !important;
-  border-right-width: 4px !important;
-  background-color: white !important;
-}
-
-.copilotkit-popup-button {
-  background-color: var(--copilot-kit-primary-color) !important;
-  color: var(--copilot-kit-text-color) !important;
-  border: 2px solid var(--copilot-kit-border-color) !important;
-  border-bottom-width: 4px !important;
-  border-right-width: 4px !important;
-  transition: all 0.1s ease !important;
-}
-
-.copilotkit-popup-button:hover {
-  background-color: var(--copilot-kit-hover-color) !important;
-  border-bottom-width: 2px !important;
-  border-right-width: 2px !important;
-}

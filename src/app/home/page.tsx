@@ -1,5 +1,4 @@
 "use client"
-import { CopilotPopup } from "@copilotkit/react-ui";
 import { useRouter } from 'next/navigation';
 import { BookOpen, Brain, BarChart, Clock, Book } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -52,14 +51,6 @@ export default function Home() {
   ];
 
   return (
-    <CopilotPopup
-      defaultOpen={false}
-      instructions="You are an AI study assistant named Mind Mentor. Your role is to help students with their study-related questions, provide explanations, and offer learning strategies."
-      labels={{
-        title: "Mind Mentor Assistant",
-        initial: "Hello! 👋 I'm your AI study assistant. How can I help you with your learning today?",
-      }}
-    >
       <div className="p-8">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
@@ -117,6 +108,5 @@ export default function Home() {
           ))}
         </div>
       </div>
-    </CopilotPopup>
   );
 }
