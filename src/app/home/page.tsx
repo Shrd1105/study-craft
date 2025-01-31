@@ -1,7 +1,7 @@
 "use client"
 import { CopilotPopup } from "@copilotkit/react-ui";
 import { useRouter } from 'next/navigation';
-import { BookOpen, Brain, BarChart, Clock, Book, Users } from 'lucide-react';
+import { BookOpen, Brain, BarChart, Clock, Book } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function Home() {
