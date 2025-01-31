@@ -1,6 +1,5 @@
 "use client"
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,44 +57,60 @@ export default function ResourceCurator() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
-    >
-      <h2 className="text-2xl font-semibold text-blue-400 mb-4">AI-Curated Resources</h2>
-      <form onSubmit={handleCurateResources} className="space-y-4">
-        <Input
-          type="text"
-          placeholder="Enter a topic"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="bg-white/20 border-white/10 text-white placeholder-white/50"
-        />
-        <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white" disabled={isLoading}>
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {isLoading ? 'Curating...' : 'Curate Resources'}
-        </Button>
-      </form>
-      {resources.length > 0 && (
-        <ScrollArea className="h-[300px] mt-4">
-          {resources.map((resource, index) => (
-            <Card key={index} className="mb-4 bg-white/5 border-white/10">
-              <CardHeader>
-                <CardTitle className="text-blue-300">{resource.title}</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-blue-100">{resource.description}</p>
-                <a href={resource.link} target="_blank" rel="noopener noreferrer" className="text-blue-400 hover:underline mt-2 inline-block">
-                  Learn More
-                </a>
-              </CardContent>
-            </Card>
-          ))}
-        </ScrollArea>
-      )}
-      {error && <p className="text-red-500 mt-4">{error}</p>}
-    </motion.div>
+    <div className="w-full bg-[#F4FFC3] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+      <div className="max-w-3xl mx-auto">
+        <form onSubmit={handleCurateResources} className="space-y-4 mb-8">
+          <Input
+            type="text"
+            placeholder="Enter a topic to find learning resources..."
+            value={subject}
+            onChange={(e) => setSubject(e.target.value)}
+            className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+          />
+          <div className="flex justify-center w-full">
+            <Button 
+              type="submit" 
+              className="bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {isLoading ? 'Curating Resources...' : 'Find Learning Resources'}
+            </Button>
+          </div>
+        </form>
+
+        {resources.length > 0 && (
+          <ScrollArea className="h-[calc(100vh-400px)] w-full">
+            <div className="grid grid-cols-1 gap-10">
+              {resources.map((resource, index) => (
+                <Card key={index} className="bg-white border-2 border-black border-b-4 border-r-4">
+                  <CardHeader>
+                    <CardTitle className="text-xl text-gray-800">{resource.title}</CardTitle>
+                    <div className="text-sm text-gray-500">{resource.type}</div>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-gray-600 mb-4">{resource.description}</p>
+                    <a 
+                      href={resource.link} 
+                      target="_blank" 
+                      rel="noopener noreferrer" 
+                      className="inline-flex items-center text-[#7fb236] hover:text-[#6f9826] hover:underline"
+                    >
+                      Learn More →
+                    </a>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          </ScrollArea>
+        )}
+        
+        {error && (
+          <div className="text-red-500 mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
+            {error}
+          </div>
+        )}
+      </div>
+    </div>
   );
 }

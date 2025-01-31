@@ -1,82 +1,121 @@
 "use client"
-import { motion } from 'framer-motion'
-import StudyPlanForm from '../../components/StudyPlanForm';
-import ResourceCurator from '../../components/ResourceCurator';
-import { Github } from 'lucide-react'
-import Link from 'next/link'
 import { CopilotPopup } from "@copilotkit/react-ui";
-import "@copilotkit/react-ui/styles.css";
+import { useRouter } from 'next/navigation';
+import { BookOpen, Brain, BarChart, Clock, Book, Users } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 
 export default function Home() {
+  const router = useRouter();
+
+  const stats = [
+    {
+      title: "Study Hours",
+      value: "12.5",
+      description: "Last 7 days",
+      icon: <Clock className="h-4 w-4 text-[#7fb236]" />
+    },
+    {
+      title: "Topics Covered",
+      value: "8",
+      description: "This month",
+      icon: <Book className="h-4 w-4 text-[#7fb236]" />
+    },
+    {
+      title: "Resources Saved",
+      value: "24",
+      description: "Total",
+      icon: <BookOpen className="h-4 w-4 text-[#7fb236]" />
+    },
+    {
+      title: "Study Streak",
+      value: "5 days",
+      description: "Current",
+      icon: <BarChart className="h-4 w-4 text-[#7fb236]" />
+    }
+  ];
+
+  const features = [
+    {
+      title: "Study Plan Generator",
+      description: "Create personalized study plans based on your goals and timeline. Track your progress and adjust as needed.",
+      icon: <BookOpen className="h-8 w-8 text-[#7fb236]" />,
+      path: "/study-plan",
+      metrics: "5 active plans"
+    },
+    {
+      title: "Resource Curator",
+      description: "Discover AI-curated learning resources tailored to your topics. Save and organize materials for easy access.",
+      icon: <Brain className="h-8 w-8 text-[#7fb236]" />,
+      path: "/resources",
+      metrics: "150+ resources available"
+    }
+  ];
+
   return (
     <CopilotPopup
       defaultOpen={false}
-      instructions="You are an AI study assistant named Mind Mentor. Your role is to help students with their study-related questions, provide explanations, and offer learning strategies. Always be supportive, encouraging, and provide accurate information."
+      instructions="You are an AI study assistant named Mind Mentor. Your role is to help students with their study-related questions, provide explanations, and offer learning strategies."
       labels={{
         title: "Mind Mentor Assistant",
         initial: "Hello! 👋 I'm your AI study assistant. How can I help you with your learning today?",
       }}
     >
-      <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-900 to-blue-900 text-white relative overflow-hidden">
-        {/* Futuristic background elements */}
-        <div className="absolute inset-0 z-0">
-          <motion.div
-            className="absolute top-1/4 left-1/4 w-96 h-96 bg-blue-500/20 rounded-full filter blur-3xl"
-            animate={{
-              opacity: [0.5, 1, 0.5],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <motion.div
-            className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-purple-500/20 rounded-full filter blur-3xl"
-            animate={{
-              opacity: [0.5, 1, 0.5],
-              scale: [1, 1.2, 1],
-            }}
-            transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-          />
-          <div className="absolute inset-0 bg-[url('/images/circuit-pattern.jpg')] opacity-10 bg-repeat"></div>
+      <div className="p-8">
+        <div className="flex items-center justify-between mb-8">
+          <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
+          <div className="flex items-center gap-4">
+            <span className="text-sm text-gray-600">Last updated: Just now</span>
+          </div>
         </div>
 
-        {/* Updated Navbar */}
-        <header className="sticky top-0 z-50 w-full border-b border-white/10 bg-black/50 backdrop-blur-lg">
-          <div className="container flex h-16 items-center justify-between">
-            <Link href="/" className="text-2xl font-bold text-blue-400 p-10">
-              Mind Mentor
-            </Link>
-            <nav className="flex items-center gap-4">
-              <Link href="https://github.com/KartikLabhshetwar/mind-mentor" className="relative p-10">
-                <Github className="h-5 w-5 hover:text-blue-400 transition-colors" />
-              </Link>
-            </nav>
-          </div>
-        </header>
+        {/* Stats Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+          {stats.map((stat, index) => (
+            <Card key={index} className="bg-white">
+              <CardHeader className="flex flex-row items-center justify-between pb-2">
+                <CardTitle className="text-sm font-medium text-gray-500">
+                  {stat.title}
+                </CardTitle>
+                <div className="w-8 h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-4 border-r-4 border-black">
+                  {stat.icon}
+                </div>
+              </CardHeader>
+              <CardContent>
+                <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
+                <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
 
-        <main className="container mx-auto px-4 py-16 flex-grow relative z-10">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5 }}
-            className="space-y-8"
-          >
-            <h1 className="text-4xl font-bold text-center text-blue-300">Mind Mentor Dashboard</h1>
-            <div className="grid gap-8 md:grid-cols-2">
-              <StudyPlanForm />
-              <ResourceCurator />
-            </div>
-          </motion.div>
-        </main>
-
-        <footer className="bg-black/50 backdrop-blur-lg text-white py-8 relative z-10 border-t border-white/10">
-          <div className="container mx-auto px-4">
-            <div className="flex justify-center items-center">
-              <div className="text-sm">
-                © {new Date().getFullYear()} Mind Mentor. All rights reserved.
-              </div>
-            </div>
-          </div>
-        </footer>
+        {/* Features Grid */}
+        <div className="grid md:grid-cols-2 gap-6">
+          {features.map((feature, index) => (
+            <Card 
+              key={index}
+              className="cursor-pointer hover:shadow-lg transition-all duration-300 bg-white"
+              onClick={() => router.push(feature.path)}
+            >
+              <CardHeader>
+                <div className="flex items-center gap-4">
+                  <div className="w-12 h-12 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-4 border-r-4 border-black">
+                    {feature.icon}
+                  </div>
+                  <div>
+                    <CardTitle className="text-xl mb-1">{feature.title}</CardTitle>
+                    <CardDescription className="text-sm text-gray-500">{feature.metrics}</CardDescription>
+                  </div>
+                </div>
+              </CardHeader>
+              <CardContent>
+                <p className="text-gray-600">{feature.description}</p>
+                <div className="mt-4 flex items-center text-[#7fb236] text-sm">
+                  Learn more →
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       </div>
     </CopilotPopup>
   );

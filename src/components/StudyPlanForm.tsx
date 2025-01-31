@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StudyPlanDisplay from './StudyPlanDisplay';
@@ -46,34 +45,42 @@ export default function StudyPlanForm() {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.5 }}
-      className="bg-white/10 backdrop-blur-lg rounded-lg p-6 shadow-lg hover:shadow-blue-500/20 transition-all duration-300"
-    >
-      <h2 className="text-2xl font-semibold text-blue-400 mb-4">Create Study Plan</h2>
-      <form onSubmit={handleGeneratePlan} className="space-y-4">
-        <Input
-          type="text"
-          placeholder="Enter study topic"
-          value={subject}
-          onChange={(e) => setSubject(e.target.value)}
-          className="bg-white/20 border-white/10 text-white placeholder-white/50"
-        />
-        <Input
-          type="date"
-          placeholder="Enter exam date"
-          value={examDate}
-          onChange={(e) => setExamDate(e.target.value)}
-          className="bg-white/20 border-white/10 text-white placeholder-white/50"
-        />
-        <Button type="submit" className="w-full bg-blue-500 hover:bg-blue-600 text-white" disabled={isLoading}>
-          {isLoading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-          {isLoading ? 'Generating...' : 'Generate Plan'}
-        </Button>
-      </form>
-      {plan && <StudyPlanDisplay plan={plan} />}
-    </motion.div>
+    <div className="w-full bg-[#F4FFC3] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+      <div className="max-w-6xl mx-auto">
+        <form onSubmit={handleGeneratePlan} className="space-y-4 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <Input
+              type="text"
+              placeholder="Enter your study topic..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+            />
+            <Input
+              type="date"
+              value={examDate}
+              onChange={(e) => setExamDate(e.target.value)}
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-lg p-6 rounded-xl"
+            />
+          </div>
+          <div className="flex justify-center w-full">
+            <Button 
+              type="submit" 
+              className="flex justify-center items-center bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
+              disabled={isLoading}
+            >
+              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {isLoading ? 'Generating Your Plan...' : 'Create Study Plan'}
+            </Button>
+          </div>
+        </form>
+
+        {plan && (
+          <div className="mt-8">
+            <StudyPlanDisplay plan={plan} />
+          </div>
+        )}
+      </div>
+    </div>
   );
 }
