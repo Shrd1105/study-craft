@@ -3,7 +3,6 @@ import localFont from "next/font/local";
 import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Header } from "@/components/Header";
-import { Footer } from "@/components/Footer";
 import { Analytics } from "@vercel/analytics/react"
 
 const geistSans = localFont({
@@ -11,6 +10,7 @@ const geistSans = localFont({
   variable: "--font-geist-sans",
   weight: "100 900",
 });
+
 const geistMono = localFont({
   src: "./fonts/GeistMonoVF.woff",
   variable: "--font-geist-mono",
@@ -29,16 +29,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${geistSans.variable} ${geistMono.variable} antialiased bg-[#F4FFC3]`}>
-          <div className="flex flex-col min-h-screen">
-            <Header />
-            <main className="flex-1 container mx-auto px-4 py-16 mb-16">
-              {children}
-              <Analytics />
-            </main>
-            <Footer />
-          </div>
-          <Toaster />
+      <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#F4FFC3]`}>
+        <Header />
+        {children}
+        <Toaster />
+        <Analytics />
       </body>
     </html>
   );
