@@ -6,7 +6,7 @@ const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
 export async function POST(req: NextRequest) {
   const { subject } = await req.json();
 
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
 
   const prompt = `Curate a list of 5 free learning resources for ${subject}. For each resource, provide:
   1. The title of the resource
