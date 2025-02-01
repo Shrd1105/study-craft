@@ -4,6 +4,7 @@ import "./globals.css";
 import { Toaster } from "@/components/ui/toaster";
 import { Header } from "@/components/Header";
 import { Analytics } from "@vercel/analytics/react"
+import { NextAuthProvider } from "@/providers/NextAuthProvider";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -30,10 +31,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={`${geistSans.variable} ${geistMono.variable} antialiased min-h-screen bg-[#F4FFC3]`}>
-        <Header />
-        {children}
-        <Toaster />
-        <Analytics />
+        <NextAuthProvider>
+          <Header />
+          {children}
+          <Toaster />
+          <Analytics />
+        </NextAuthProvider>
       </body>
     </html>
   );

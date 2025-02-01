@@ -3,13 +3,24 @@
 import { BookOpen, Brain, Clock } from 'lucide-react'
 import { HeroSection } from '@/components/sections/HeroSection'
 import { FeaturesGrid } from '@/components/sections/FeatureGrid'
-
+import { useSession } from 'next-auth/react'
+import { useRouter } from 'next/navigation'
+import { useEffect } from 'react'
 
 export default function Page() {
+  const { data: session } = useSession()
+  const router = useRouter()
+
+  useEffect(() => {
+    if (session) {
+      router.push('/home')
+    }
+  }, [session, router])
+
   const features = [
     {
       icon: <BookOpen className="h-6 w-6 text-[#7fb236]" />,
-      title: "Personalized Study Plans",
+      title: "Personalized Study Plans", 
       description: "Get tailored study plans based on your goals and learning style."
     },
     {
@@ -30,8 +41,8 @@ export default function Page() {
         title="Welcome to"
         highlightedText="Mind Mentor"
         description="Your AI-powered study assistant for accelerated learning"
-        ctaText="Start Learning"
-        ctaLink="/home"
+        ctaText={session ? "Go to Dashboard" : "Get Started"}
+        ctaLink={session ? "/home" : "/register"}
       />
       <FeaturesGrid features={features} />
     </div>
