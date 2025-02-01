@@ -6,9 +6,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { BookOpen, Brain, Home, Settings, BarChart, Timer } from "lucide-react"
 
-interface DashboardNavProps extends React.HTMLAttributes<HTMLDivElement> {}
-
-export function DashboardNav({ className, ...props }: DashboardNavProps) {
+export function DashboardNav({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
 
   const routes = [
