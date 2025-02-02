@@ -19,6 +19,7 @@ const studyStatsSchema = new mongoose.Schema({
     ref: 'User',
     required: true,
     unique: true,
+    index: true,
   },
   totalStudyHours: {
     type: Number,
@@ -46,8 +47,7 @@ const studyStatsSchema = new mongoose.Schema({
   timestamps: true,
 });
 
-// Ensure indexes for performance
-studyStatsSchema.index({ userId: 1 });
+// Keep only the dailySessions.date index
 studyStatsSchema.index({ 'dailySessions.date': 1 });
 
 const StudyStats = mongoose.models.StudyStats || mongoose.model('StudyStats', studyStatsSchema);

@@ -27,15 +27,23 @@ interface StudyStats {
   };
 }
 
-interface CalendarData {
-  [key: string]: {
-    level: number;
-    data: {
-      count: number;
-      duration: number;
-      details: string;
-    };
+interface CalendarDataPoint {
+  level: number;
+  data: {
+    count: number;
+    duration: number;
+    details: string;
   };
+}
+
+interface SessionData {
+  studySessions: {
+    [key: string]: DailySession;
+  };
+  totalStudyHours: number;
+  currentStreak: number;
+  bestStreak: number;
+  lastStudyDate: string;
 }
 
 // Custom theme for the calendar
@@ -49,7 +57,7 @@ const customTheme = {
 
 export default function DashboardHome() {
   const { data: session } = useSession();
-  const [studyData, setStudyData] = useState<Array<Record<string, any>>>([{}]);
+  const [studyData, setStudyData] = useState<Array<Record<string, CalendarDataPoint>>>([{}]);
   const [stats, setStats] = useState<StudyStats>({
     currentStreak: 0,
     bestStreak: 0,
@@ -66,21 +74,23 @@ export default function DashboardHome() {
         const response = await fetch('/api/users/stats');
         if (!response.ok) throw new Error('Failed to fetch study data');
         
-        const data = await response.json();
+        const data: SessionData = await response.json();
         
         // Transform data for calendar
-        const calendarData: CalendarData = {};
+        const calendarData: Record<string, CalendarDataPoint> = {};
         
         // Process each study session
-        Object.entries(data.studySessions || {}).forEach(([date, sessionData]: [string, any]) => {
-          calendarData[date] = {
-            level: Math.min(Math.floor((sessionData.count || 0) / 2), 4),
-            data: {
-              count: sessionData.count,
-              duration: sessionData.totalDuration,
-              details: `${sessionData.count} study sessions (${Math.round(sessionData.totalDuration / 60)} minutes)`
-            }
-          };
+        Object.entries(data.studySessions || {}).forEach(([date, sessionData]) => {
+          if (sessionData) {
+            calendarData[date] = {
+              level: Math.min(Math.floor((sessionData.count || 0) / 2), 4),
+              data: {
+                count: sessionData.count,
+                duration: sessionData.totalDuration,
+                details: `${sessionData.count} study sessions (${Math.round(sessionData.totalDuration / 60)} minutes)`
+              }
+            };
+          }
         });
 
         setStudyData([calendarData]);

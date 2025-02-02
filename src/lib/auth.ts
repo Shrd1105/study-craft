@@ -1,15 +1,27 @@
-import { NextAuthOptions } from "next-auth";
+import { AuthOptions } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
 import { connectMongoDB } from "@/lib/mongodb";
 import User from "@/models/user";
 import bcrypt from "bcryptjs";
 
-export const authOptions: NextAuthOptions = {
+interface Credentials {
+  email: string;
+  password: string;
+}
+
+export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
       name: "credentials",
-      credentials: {},
-      async authorize(credentials: any) {
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" }
+      },
+      async authorize(credentials: Credentials | undefined) {
+        if (!credentials?.email || !credentials?.password) {
+          return null;
+        }
+
         const { email, password } = credentials;
 
         try {
@@ -59,4 +71,4 @@ export const authOptions: NextAuthOptions = {
       return session;
     },
   },
-}; 
+};

@@ -1,8 +1,33 @@
 import mongoose from "mongoose";
-import { StudyPlan, Resource } from "@/types/user";
+
+// Define interfaces for type safety
+interface IStudyPlan {
+  subject: string;
+  duration: string;
+  examDate: Date;
+  weeklyPlans: Array<{
+    week: string;
+    goals: string[];
+    dailyTasks: Array<{
+      day: string;
+      tasks: string[];
+      duration: string;
+    }>;
+  }>;
+  recommendations: string[];
+  createdAt: Date;
+}
+
+interface IResource {
+  title: string;
+  description?: string;
+  type?: string;
+  link?: string;
+  addedAt: Date;
+}
 
 // Define the Resource schema
-const resourceSchema = new mongoose.Schema({
+const resourceSchema = new mongoose.Schema<IResource>({
   title: {
     type: String,
     required: true,
@@ -17,7 +42,7 @@ const resourceSchema = new mongoose.Schema({
 });
 
 // Define the StudyPlan schema
-const studyPlanSchema = new mongoose.Schema({
+const studyPlanSchema = new mongoose.Schema<IStudyPlan>({
   subject: {
     type: String,
     required: true,
@@ -40,16 +65,25 @@ const studyPlanSchema = new mongoose.Schema({
   },
 });
 
-// Define the StudySession schema
-const studySessionSchema = new mongoose.Schema({
-  duration: Number,
-  startTime: Date,
-  endTime: Date,
-  mode: String,
-});
+// Define interface for User document
+interface IUser {
+  name: string;
+  email: string;
+  password: string;
+  subjects: string[];
+  savedPlans: IStudyPlan[];
+  savedResources: IResource[];
+  profile: {
+    preferences: {
+      emailNotifications: boolean;
+      studyReminders: boolean;
+    };
+  };
+  stats: mongoose.Types.ObjectId;
+}
 
 // Enhanced User schema
-const userSchema = new mongoose.Schema({
+const userSchema = new mongoose.Schema<IUser>({
   name: {
     type: String,
     required: true,
@@ -67,12 +101,9 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   }],
-  savedPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: 'StudyPlan' }],
-  savedResources: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }],
+  savedPlans: [studyPlanSchema],
+  savedResources: [resourceSchema],
   profile: {
-    avatar: String,
-    bio: String,
-    timezone: String,
     preferences: {
       emailNotifications: {
         type: Boolean,
@@ -89,30 +120,24 @@ const userSchema = new mongoose.Schema({
     ref: 'StudyStats'
   },
 }, {
-  timestamps: true, // Adds createdAt and updatedAt
+  timestamps: true,
 });
 
-// Remove duplicate index declarations
-userSchema.index({ 'savedPlans.subject': 1 });
+// Index for performance
 userSchema.index({ subjects: 1 });
 
-// Virtual for full name if needed
-userSchema.virtual('fullName').get(function() {
-  return this.name;
-});
-
-// Method to add a study plan
-userSchema.methods.addStudyPlan = function(plan: StudyPlan) {
+// Methods
+userSchema.methods.addStudyPlan = function(plan: IStudyPlan) {
   this.savedPlans.push(plan);
   return this.save();
 };
 
-// Method to add a resource
-userSchema.methods.addResource = function(resource: Resource) {
+userSchema.methods.addResource = function(resource: IResource) {
   this.savedResources.push(resource);
   return this.save();
 };
 
-const User = mongoose.models.User || mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model<IUser>("User", userSchema);
 
-export default User; 
+export default User;
+export type { IUser, IStudyPlan, IResource }; 
