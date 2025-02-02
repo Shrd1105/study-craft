@@ -349,7 +349,6 @@ export async function GET(
   }
 }
 
-// POST endpoint to curate new resources
 export async function POST(req: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
@@ -365,39 +364,23 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Set timeout for the entire operation
-    const timeoutPromise = new Promise((_, reject) => 
-      setTimeout(() => reject(new Error('Operation timed out')), 50000)
-    );
+    const searchData = await searchTavily(subject);
+    const curatedResources = await curateResourcesWithGemini(searchData, subject);
+    const transformedResources = transformResourceData(curatedResources.resources);
 
-    const resultPromise = (async () => {
-      const searchData = await searchTavily(subject);
-      const curatedResources = await curateResourcesWithGemini(searchData, subject);
-      const transformedResources = transformResourceData(curatedResources.resources);
+    await connectMongoDB();
+    const newResources = new CuratedResource({
+      userId: session.user.id,
+      topic: subject,
+      resources: transformedResources,
+      lastUpdated: new Date()
+    });
 
-      await connectMongoDB();
-      const newResources = new CuratedResource({
-        userId: session.user.id,
-        topic: subject,
-        resources: transformedResources,
-        lastUpdated: new Date()
-      });
-
-      await newResources.save();
-      return transformedResources;
-    })();
-
-    const resources = await Promise.race([resultPromise, timeoutPromise]);
-    return NextResponse.json({ resources });
+    await newResources.save();
+    return NextResponse.json({ resources: transformedResources });
 
   } catch (error) {
     console.error("Error processing request:", error);
-    if (error instanceof Error && error.message === 'Operation timed out') {
-      return NextResponse.json(
-        { error: "Request timed out. Please try again." },
-        { status: 504 }
-      );
-    }
     return NextResponse.json(
       { error: "Failed to curate resources. Please try again later." },
       { status: 500 }
