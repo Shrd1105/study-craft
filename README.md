@@ -1,104 +1,177 @@
-# Mind Mentor: AI-Powered Study Assistant 
+# Mind Mentor: AI-Powered Study Assistant 🧠
 
 ## Table of Contents
 - [Overview](#overview)
-- [Demo](#demo)
-- [Key Features](#key-features)
-- [Technologies Used](#technologies-used) 
-- [Setup and Installation](#setup-and-installation)
-- [Usage](#usage)
+- [Features](#features)
+- [Tech Stack](#tech-stack)
+- [Architecture](#architecture)
+- [Installation](#installation)
+- [Environment Setup](#environment-setup)
+- [API Integration](#api-integration)
+- [Usage Guide](#usage-guide)
 - [Contributing](#contributing)
 - [License](#license)
-- [Acknowledgements](#acknowledgements)
 
 ## Overview
 
-Mind Mentor is an innovative AI-powered study assistant designed to revolutionize the way students learn and prepare for exams. Leveraging cutting-edge AI technologies, Mind Mentor offers personalized study plans, curates learning resources, and provides intelligent assistance to accelerate your learning journey.
+Mind Mentor is an intelligent study companion that leverages AI to transform the learning experience. It combines personalized study planning, resource curation, and interactive assistance to help students achieve their academic goals efficiently.
 
-## Demo
+## Features
 
-https://github.com/user-attachments/assets/7406e7f2-f7bd-472a-90e4-2a82b5465efb
+### 1. Personalized Study Plans 📚
+- Dynamic plan generation based on subject and exam date
+- Weekly and daily task breakdown
+- Progress tracking and adjustable schedules
+- Smart recommendations based on learning patterns
+- Visual calendar integration for session tracking
 
-## Key Features
+### 2. AI-Powered Resource Curation 🔍
+- Intelligent filtering of educational resources
+- Support for multiple content types:
+  - Online courses
+  - Video tutorials
+  - Documentation
+  - Interactive exercises
+  - Academic papers
+- Quality scoring and relevance ranking
 
-- **Personalized Study Plans**: Generate tailored study schedules based on your subject and exam date.
-- **AI-Curated Resources**: Access a wealth of learning materials curated by our advanced AI.
-- **Intelligent Q&A**: Get instant answers to your questions as you learn.
-- **Interactive UI**: Enjoy a sleek, responsive interface with animated components for an engaging user experience.
+### 3. Productivity Tools ⚡
+- **Pomodoro Timer**
+- **Smart Notes System**
 
-## Technologies Used
+### 4. User Experience 🎯
+- Clean, intuitive interface
+- Responsive design
+- Progress visualization
+- Resource bookmarking
+- Cross-device synchronization
 
-- **Frontend**: Next.js 14, React, TypeScript
-- **Styling**: Tailwind CSS, Framer Motion for animations
-- **AI Integration**: 
-  - Google's Generative AI (Gemini Pro model) for study plan generation and resource curation
-  - Groq AI with CopilotKit for the intelligent chatbot assistant
-- **UI Components**: Radix UI, Shadcn UI
-- **State Management**: React Hooks
-- **API Routes**: Next.js API routes for backend functionality
+## Tech Stack
 
-## Setup and Installation
+### Frontend
+- **Framework**: Next.js 14 (App Router)
+- **Language**: TypeScript
+- **Styling**: 
+  - Tailwind CSS
+  - Shadcn UI
+- **State Management**: Zustand
+- **Authentication**: NextAuth.js
+
+### Backend
+- **API Routes**: Next.js API Routes
+- **Database**: MongoDB with Mongoose
+- **AI Services**:
+  - Google Generative AI (Gemini Pro)
+  - Tavily API for resource curation
+- **Authentication**: JWT with NextAuth.js
+
+
+## Architecture
+
+```
+mind-mentor/
+├── src/
+│   ├── app/                 # Next.js 14 app directory
+│   │   ├── (auth)/         # Authentication routes
+│   │   ├── (dashboard)/    # Protected dashboard routes
+│   │   ├── (marketing)/    # Public marketing pages
+│   │   └── api/            # API routes
+│   ├── components/         # React components
+│   ├── lib/               # Utility functions and configs
+│   ├── models/            # MongoDB schemas
+│   └── types/             # TypeScript type definitions
+├── public/                # Static assets
+
+```
+
+## Installation
 
 1. Clone the repository:
-   ```bash
-   git clone https://github.com/KartikLabhshetwar/mind-mentor.git
-   cd mind-mentor
-   ```
+```bash
+git clone https://github.com/KartikLabhshetwar/mind-mentor
+cd mind-mentor
+```
 
 2. Install dependencies:
-   ```bash
-   npm install
-   ```
+```bash
+npm install
+```
 
-3. Set up environment variables:
-   Create a `.env.local` file in the root directory and add your API keys:
-   ```
-   GOOGLE_API_KEY=your_google_api_key_here
-   GROQ_API_KEY=your_groq_api_key_here
-   ```
+3. Run the development server:
+```bash
+npm run dev
+```
 
-4. Run the development server:
-   ```bash
-   npm run dev
-   ```
+## Environment Setup
 
-5. Open [http://localhost:3000](http://localhost:3000) in your browser to see the application.
+Create a `.env.local` file with the following variables:
 
-## Usage
+```env
+# Authentication
+NEXTAUTH_URL=http://localhost:3000
+NEXTAUTH_SECRET=your-nextauth-secret
 
-1. **Generate Study Plan**:
-   - Navigate to the Study Plan section.
-   - Enter your subject and exam date.
-   - Click "Generate Plan" to receive a personalized study schedule.
+# Database
+MONGODB_URI=your-mongodb-uri
 
-2. **Curate Resources**:
-   - Go to the Resource Curator section.
-   - Input a topic of interest.
-   - Click "Curate Resources" to get AI-recommended learning materials.
+# AI Services
+GOOGLE_API_KEY=your-gemini-api-key
+TAVILY_API_KEY=your-tavily-api-key
 
-3. **Ask Questions**:
-   - Use the CopilotKit assistant feature for any study-related queries.
-   - Get instant, intelligent responses to support your learning.
+# Optional Services
+GROQ_API_KEY=your-groq-api-key
+```
+
+## API Integration
+
+### Google Generative AI (Gemini)
+Used for:
+- Study plan generation
+- Resource description enhancement
+- Learning path recommendations
+
+### Tavily API
+Used for:
+- Educational resource curation
+- Content relevance scoring
+- Resource metadata extraction
+
+## Usage Guide
+
+### Study Plan Generation
+1. Navigate to the study plan section
+2. Enter your subject and exam date
+3. Click "Generate Plan"
+4. View and customize your personalized study schedule
+
+### Pomodoro Timer
+1. A 25 minute timer work/break duration
+2. Start your study session
+3. Follow the timer prompts for breaks
+4. View your session history and statistics
+5. Adjust intervals based on productivity patterns
+
+### Notes Management
+1. Create new notes with rich text formatting
+2. Organize notes by subjects/topics
+3. Use the search function to find specific content
+4. Export notes in various formats
+5. Access your notes across devices
 
 ## Contributing
 
-Contributions are welcome! Please feel free to submit a Pull Request.
+We welcome contributions! Please follow these steps:
+
+1. Fork the repository
+2. Create a feature branch
+3. Commit your changes
+4. Push to your branch
+5. Create a Pull Request
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE.txt) file for details.
-
-## Acknowledgements
-
-- [Next.js](https://nextjs.org/)
-- [Tailwind CSS](https://tailwindcss.com/)
-- [Framer Motion](https://www.framer.com/motion/)
-- [Google Generative AI](https://ai.google.dev/)
-- [Groq AI](https://groq.com/)
-- [CopilotKit](https://docs.copilotkit.ai/)
-- [Radix UI](https://www.radix-ui.com/)
-- [Shadcn UI](https://ui.shadcn.com/)
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
 
 ---
 
-Developed with ❤️ by Kartik
+Built with 💡 by Kartik Labhshetwar

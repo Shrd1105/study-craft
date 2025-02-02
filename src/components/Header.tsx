@@ -1,20 +1,45 @@
 "use client"
 
 import Link from 'next/link'
+import { usePathname, useRouter } from 'next/navigation' 
+import { signIn, signOut, useSession } from 'next-auth/react'
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip"
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { Button } from "@/components/ui/button"
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuGroup,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu"
 
 export function Header() {
+  const pathname = usePathname()
+  const router = useRouter()
+  const { data: session } = useSession()
+  const isMarketing = pathname === '/'
+
+  const handleNavigation = (path: string) => {
+    router.push(path)
+  }
+
   return (
-    <header className="sticky top-0 z-50 bg-[#F4FFC3] border-b-2 border-black">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFAEC] border-b-2 border-black h-14">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
-            <Link href="/" className="flex items-center gap-2">
+            <Link 
+              href={session ? "/home" : "/"} 
+              className="flex items-center gap-2"
+            >
               <div className="w-8 h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-3 border-r-3 border-black">
                 <span className="text-black text-xl">🎓</span>
               </div>
@@ -22,23 +47,79 @@ export function Header() {
             </Link>
           </div>
           
-          <nav className="flex items-center">
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link 
-                    href="https://github.com/KartikLabhshetwar/mind-mentor" 
-                    target="_blank"
-                    className="px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2"
-                  >
-                    GitHub
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent>
-                  <p>Star on GitHub</p>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+          <nav className="flex items-center space-x-4">
+            {isMarketing ? (
+              <>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link 
+                        href="https://github.com/KartikLabhshetwar/mind-mentor" 
+                        target="_blank"
+                        className="px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2"
+                      >
+                        GitHub
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Star on GitHub</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {!session ? (
+                  <div className="flex gap-2">
+                    <Button
+                      variant="outline"
+                      onClick={() => signIn()}
+                      className="border-2 border-black"
+                    >
+                      Sign In
+                    </Button>
+                    <Link href="/register" passHref>
+                      <button className="px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2">
+                        Sign Up
+                      </button>
+                    </Link>
+                  </div>
+                ) : null}
+              </>
+            ) : null}
+
+            {session ? (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
+                    <Avatar className="h-10 w-10 bg-[#A9C46C]">
+                      <AvatarImage 
+                        src={session.user?.image || "/images/default-avatar.png"} 
+                        alt={session.user?.name || '@user'} 
+                      />
+                      <AvatarFallback>{session.user?.name?.[0] || 'U'}</AvatarFallback>
+                    </Avatar>
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="w-56 border-2 border-black" align="end" forceMount>
+                  <DropdownMenuLabel className="font-normal border-b-2 border-black">
+                    <div className="flex flex-col space-y-1 ">
+                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground">
+                        {session.user?.email}
+                      </p>
+                    </div>
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuGroup>
+                    <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+                      Profile
+                    </DropdownMenuItem>
+                  </DropdownMenuGroup>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem onClick={() => signOut()}>
+                    Log out
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            ) : null}
           </nav>
         </div>
       </div>

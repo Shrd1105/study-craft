@@ -5,26 +5,13 @@ import StudyPlanDisplay from './StudyPlanDisplay';
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import type { StudyPlan } from "@/components/study-plan/StoredPlan";
 
-interface StudyPlan {
-  overview: {
-    subject: string;
-    duration: string;
-    examDate: string;
-  };
-  weeklyPlans: Array<{
-    week: string;
-    goals: string[];
-    dailyTasks: Array<{
-      day: string;
-      tasks: string[];
-      duration: string;
-    }>;
-  }>;
-  recommendations: string[];
+interface StudyPlanFormProps {
+  onPlanGenerated: (plan: Partial<StudyPlan>) => void;
 }
 
-export default function StudyPlanForm() {
+export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   const [subject, setSubject] = useState('');
   const [examDate, setExamDate] = useState('');
   const [plan, setPlan] = useState<StudyPlan | null>(null);
@@ -42,7 +29,8 @@ export default function StudyPlanForm() {
       });
       const data = await response.json();
       if (response.ok) {
-        setPlan(data.plan);
+        setPlan(data.plan); 
+        onPlanGenerated(data.plan);
         toast({
           title: "Study Plan Generated",
           description: "Your study plan is ready!",
@@ -63,7 +51,7 @@ export default function StudyPlanForm() {
   };
 
   return (
-    <div className="w-full bg-[#F4FFC3] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-6xl mx-auto">
         <form onSubmit={handleGeneratePlan} className="space-y-4 mb-8">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
