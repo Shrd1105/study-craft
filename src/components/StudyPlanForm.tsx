@@ -5,26 +5,13 @@ import StudyPlanDisplay from './StudyPlanDisplay';
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
+import type { StudyPlan } from "@/components/study-plan/StoredPlan";
 
-interface StudyPlan {
-  overview: {
-    subject: string;
-    duration: string;
-    examDate: string;
-  };
-  weeklyPlans: Array<{
-    week: string;
-    goals: string[];
-    dailyTasks: Array<{
-      day: string;
-      tasks: string[];
-      duration: string;
-    }>;
-  }>;
-  recommendations: string[];
+interface StudyPlanFormProps {
+  onPlanGenerated: (plan: Partial<StudyPlan>) => void;
 }
 
-export default function StudyPlanForm() {
+export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   const [subject, setSubject] = useState('');
   const [examDate, setExamDate] = useState('');
   const [plan, setPlan] = useState<StudyPlan | null>(null);
@@ -42,7 +29,8 @@ export default function StudyPlanForm() {
       });
       const data = await response.json();
       if (response.ok) {
-        setPlan(data.plan);
+        setPlan(data.plan); 
+        onPlanGenerated(data.plan);
         toast({
           title: "Study Plan Generated",
           description: "Your study plan is ready!",

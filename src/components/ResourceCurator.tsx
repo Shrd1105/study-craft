@@ -15,7 +15,11 @@ interface Resource {
   link: string;
 }
 
-export default function ResourceCurator() {
+interface ResourceCuratorProps {
+  onResourceGenerated?: (resources: Resource[]) => void;
+}
+
+export default function ResourceCurator({ onResourceGenerated }: ResourceCuratorProps) {
   const [subject, setSubject] = useState('');
   const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +39,7 @@ export default function ResourceCurator() {
       const data = await response.json();
       if (response.ok) {
         setResources(data.resources);
+        onResourceGenerated?.(data.resources);
         toast({
           title: "Resources Found",
           description: `Found ${data.resources.length} resources for ${subject}`,
