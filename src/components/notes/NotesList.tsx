@@ -28,11 +28,11 @@ interface NotesListProps {
 
 export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh }: NotesListProps) {
   const { toast } = useToast();
-  const [deleting, setDeleting] = useState<string | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async (noteId: string) => {
     try {
-      setDeleting(noteId);
+      setIsDeleting(true);
       const response = await fetch(`/api/notes/${noteId}`, {
         method: 'DELETE',
       });
@@ -53,7 +53,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
         variant: "destructive",
       });
     } finally {
-      setDeleting(null);
+      setIsDeleting(false);
     }
   };
 
@@ -87,6 +87,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
                 variant="ghost"
                 className="h-8 w-8 p-0"
                 onClick={(e) => e.stopPropagation()}
+                disabled={isDeleting}
               >
                 <MoreVertical className="h-4 w-4" />
               </Button>
@@ -98,6 +99,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
                   e.stopPropagation();
                   handleDelete(note._id);
                 }}
+                disabled={isDeleting}
               >
                 <Trash2 className="h-4 w-4 mr-2" />
                 Delete

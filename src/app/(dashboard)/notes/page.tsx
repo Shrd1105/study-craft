@@ -1,10 +1,10 @@
 "use client"
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useSession } from 'next-auth/react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Plus, File, Folder } from 'lucide-react';
+import { Plus, File } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import NoteEditor from '@/components/notes/NoteEditor';
 import NotesList from '@/components/notes/NotesList';
@@ -17,6 +17,14 @@ interface Note {
   parentId: string | null;
 }
 
+interface NoteData {
+  _id: string;
+  title: string;
+  content: Array<{ type: string; content: string }>;
+  updatedAt: string;
+  parentId: string | null;
+}
+
 export default function NotesPage() {
   const { data: session } = useSession();
   const { toast } = useToast();
@@ -25,17 +33,13 @@ export default function NotesPage() {
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isCreating, setIsCreating] = useState(false);
 
-  useEffect(() => {
-    fetchNotes();
-  }, [session]);
-
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       const response = await fetch('/api/notes');
       if (!response.ok) throw new Error('Failed to fetch notes');
       const data = await response.json();
-      // Convert any[] content to string
-      const formattedNotes = data.map((note: any) => ({
+      // Convert content array to string
+      const formattedNotes = data.map((note: NoteData) => ({
         ...note,
         content: Array.isArray(note.content) ? note.content[0]?.content || '' : note.content || ''
       }));
@@ -50,7 +54,11 @@ export default function NotesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [toast]);
+
+  useEffect(() => {
+    fetchNotes();
+  }, [fetchNotes, session]);
 
   const createNewNote = async () => {
     setIsCreating(true);
