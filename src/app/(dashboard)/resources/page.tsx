@@ -18,11 +18,36 @@ export default function ResourcesPage() {
   const fetchStoredResources = async () => {
     try {
       const response = await fetch("/api/curate-resources");
-      if (!response.ok) throw new Error("Failed to fetch resources");
+      if (!response.ok) {
+        throw new Error("Failed to fetch resources");
+      }
       const data = await response.json();
-      setStoredResources(data.resources);
+      console.log("Fetched resources data:", data);
+      
+      if (data.error) {
+        console.error("API returned error:", data.error);
+        setStoredResources([]);
+        return;
+      }
+      
+      if (data.resources && Array.isArray(data.resources)) {
+        // Validate the structure of each resource
+        const validResources = data.resources.filter((resource: any) => {
+          return resource && 
+                 resource._id && 
+                 resource.topic && 
+                 Array.isArray(resource.resources);
+        });
+        
+        console.log("Valid resources:", validResources);
+        setStoredResources(validResources);
+      } else {
+        console.error("Invalid resources data structure:", data);
+        setStoredResources([]);
+      }
     } catch (error) {
       console.error("Error fetching resources:", error);
+      setStoredResources([]);
     } finally {
       setLoading(false);
     }
@@ -30,10 +55,6 @@ export default function ResourcesPage() {
 
   const handleResourceDelete = (resourceId: string) => {
     setStoredResources(resources => resources.filter(resource => resource._id !== resourceId));
-  };
-
-  const handleResourceGenerated = (newResource: CuratedResource) => {
-    setStoredResources(resources => [newResource, ...resources]);
   };
 
   return (

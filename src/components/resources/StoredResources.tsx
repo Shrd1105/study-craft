@@ -50,6 +50,10 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
     }
   };
 
+  const formattedDate = resource.lastUpdated 
+    ? new Date(resource.lastUpdated).toLocaleDateString()
+    : 'Date not available';
+
   return (
     <Card className="w-full mt-8">
       <CardHeader className="flex flex-row items-center justify-between">
@@ -58,9 +62,7 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
             Resources for {resource.topic}
           </CardTitle>
           <div className="flex gap-2 mt-2">
-            <Badge variant="outline">
-              {new Date(resource.lastUpdated).toLocaleDateString()}
-            </Badge>
+            <Badge variant="outline">{formattedDate}</Badge>
             <Badge variant="outline">{resource.resources.length} Resources</Badge>
           </div>
         </div>

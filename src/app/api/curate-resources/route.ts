@@ -4,8 +4,10 @@ import { getServerSession } from "next-auth";
 import { connectMongoDB } from "@/lib/mongodb";
 import { authOptions } from "@/lib/auth";
 import CuratedResource from "@/models/curatedResource";
+import { ObjectId } from 'mongodb';
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY!);
+const TAVILY_API_KEY = process.env.TAVILY_API_KEY;
 
 interface TavilySearchResult {
   title: string;
@@ -19,55 +21,108 @@ interface TavilyResponse {
   answer?: string;
 }
 
+interface Resource {
+  title: string;
+  url: string;
+  description: string;
+  benefits: string[];
+}
+
+interface ExtractResult {
+  url: string;
+  raw_content: string;
+}
+
+interface ExtractResponse {
+  results: ExtractResult[];
+}
+
 // Function to search using Tavily API with proper error handling
 async function searchTavily(subject: string): Promise<TavilyResponse> {
   try {
-    if (!process.env.TAVILY_API_KEY) {
+    if (!TAVILY_API_KEY) {
       console.error("TAVILY_API_KEY is not configured");
       return { results: [], answer: '' };
     }
 
-    const response = await fetch('https://api.tavily.com/search', {
+    // First use search API to get relevant results
+    const searchResponse = await fetch('https://api.tavily.com/search', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.TAVILY_API_KEY}`
+        'Authorization': `Bearer ${TAVILY_API_KEY}`
       },
       body: JSON.stringify({
-        query: `best free learning resources tutorials courses for ${subject}`,
+        query: `best learning resources and courses for ${subject}`,
         search_depth: "advanced",
         include_answer: true,
-        max_results: 5,
+        max_results: 10,
         include_domains: [
-          "freecodecamp.org",
           "coursera.org",
-          "edx.org",
+          "edx.org", 
+          "udemy.com",
           "khanacademy.org",
+          "freecodecamp.org",
           "w3schools.com",
-          "youtube.com",
-          "github.com",
-          "dev.to",
-          "medium.com"
+          "mit.edu",
+          "stanford.edu"
         ]
       })
     });
 
-    if (!response.ok) {
-      console.error("Tavily API error:", {
-        status: response.status,
-        statusText: response.statusText
-      });
-      return { results: [], answer: '' };
+    if (!searchResponse.ok) {
+      throw new Error(`Tavily search failed: ${searchResponse.statusText}`);
     }
 
-    const data = await response.json();
+    const searchData = await searchResponse.json() as TavilyResponse;
+    console.log("Tavily search results:", searchData);
+
+    // Then use extract API to get more details about each URL
+    const validUrls = searchData.results
+      .map((result: TavilySearchResult) => result.url)
+      .filter((url: string) => {
+        try {
+          new URL(url);
+          return true;
+        } catch {
+          return false;
+        }
+      });
+
+    const extractResponse = await fetch('https://api.tavily.com/extract', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${TAVILY_API_KEY}`
+      },
+      body: JSON.stringify({
+        urls: validUrls
+      })
+    });
+
+    if (!extractResponse.ok) {
+      throw new Error(`Tavily extract failed: ${extractResponse.statusText}`);
+    }
+
+    const extractData = await extractResponse.json() as ExtractResponse;
+    console.log("Tavily extract results:", extractData);
+
+    // Combine search and extract results
+    const enhancedResults = searchData.results.map((result: TavilySearchResult) => {
+      const extractInfo = extractData.results.find((e: ExtractResult) => e.url === result.url);
+      return {
+        ...result,
+        content: extractInfo?.raw_content || result.content
+      };
+    });
+
     return {
-      results: data.results || [],
-      answer: data.answer || ''
+      results: enhancedResults,
+      answer: searchData.answer
     };
   } catch (error) {
-    console.error("Tavily search error:", error);
-    return { results: [], answer: '' };
+    console.error("Tavily API error:", error);
+    throw error;
   }
 }
 
@@ -146,7 +201,7 @@ Return the list in this JSON format:
     }
 
     // Validate each resource has required fields
-    resources.resources.forEach((resource: any) => {
+    resources.resources.forEach((resource: Resource) => {
       if (!resource.title || !resource.url || !resource.description || !Array.isArray(resource.benefits)) {
         throw new Error("Invalid resource format");
       }
@@ -161,13 +216,17 @@ Return the list in this JSON format:
 }
 
 // Function to transform resource data to match schema
-function transformResourceData(resources: any[]) {
+function transformResourceData(resources: Resource[]): Array<{
+  title: string;
+  link: string;
+  type: string;
+  description: string;
+}> {
   return resources.map(resource => ({
     title: resource.title,
-    link: resource.url, // Map url to link
-    type: determineResourceType(resource.url), // Helper function to determine type
-    description: resource.description,
-    benefits: resource.benefits
+    link: resource.url,
+    type: determineResourceType(resource.url),
+    description: resource.description
   }));
 }
 
@@ -188,15 +247,60 @@ export async function GET(
   try {
     const session = await getServerSession(authOptions);
     if (!session?.user?.id) {
+      console.log("No session or user ID found");
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    console.log("Fetching resources for user:", session.user.id);
+    
     await connectMongoDB();
-    const resources = await CuratedResource.find({
-      userId: session.user.id
-    }).sort({ createdAt: -1 });
+    
+    // Convert string ID to ObjectId
+    const userId = new ObjectId(session.user.id);
+    console.log("Querying with userId:", userId);
 
-    return NextResponse.json({ resources });
+    const resources = await CuratedResource.find({
+      userId: userId
+    }).lean();
+
+    console.log("Raw MongoDB response:", JSON.stringify(resources, null, 2));
+
+    if (!resources || resources.length === 0) {
+      console.log("No resources found for user");
+      return NextResponse.json({ resources: [] });
+    }
+
+    // Transform the MongoDB documents to plain objects
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const transformedResources = resources.map((resource: any) => {
+      try {
+        return {
+          _id: resource._id.toString(),
+          topic: resource.topic,
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          resources: resource.resources.map((item: any) => ({
+            _id: item._id.toString(),
+            title: item.title,
+            description: item.description,
+            type: item.type,
+            link: item.link
+          })),
+          lastUpdated: resource.lastUpdated,
+          createdAt: resource.createdAt,
+          updatedAt: resource.updatedAt
+        };
+      } catch (err) {
+        console.error("Error transforming resource:", err);
+        console.log("Problematic resource:", resource);
+        return null;
+      }
+    }).filter(Boolean); // Remove any null values from failed transformations
+
+    console.log("Successfully transformed resources:", 
+      JSON.stringify(transformedResources, null, 2)
+    );
+
+    return NextResponse.json({ resources: transformedResources });
   } catch (error) {
     console.error("Error fetching resources:", error);
     return NextResponse.json(
