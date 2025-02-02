@@ -40,6 +40,14 @@ const studyPlanSchema = new mongoose.Schema({
   },
 });
 
+// Define the StudySession schema
+const studySessionSchema = new mongoose.Schema({
+  duration: Number,
+  startTime: Date,
+  endTime: Date,
+  mode: String,
+});
+
 // Enhanced User schema
 const userSchema = new mongoose.Schema({
   name: {
@@ -59,8 +67,8 @@ const userSchema = new mongoose.Schema({
     type: String,
     trim: true,
   }],
-  savedPlans: [studyPlanSchema],
-  savedResources: [resourceSchema],
+  savedPlans: [{ type: mongoose.Schema.Types.ObjectId, ref: 'StudyPlan' }],
+  savedResources: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Resource' }],
   profile: {
     avatar: String,
     bio: String,
@@ -77,19 +85,8 @@ const userSchema = new mongoose.Schema({
     },
   },
   stats: {
-    totalStudyHours: {
-      type: Number,
-      default: 0,
-    },
-    completedTasks: {
-      type: Number,
-      default: 0,
-    },
-    currentStreak: {
-      type: Number,
-      default: 0,
-    },
-    lastStudyDate: Date,
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'StudyStats'
   },
 }, {
   timestamps: true, // Adds createdAt and updatedAt
@@ -113,13 +110,6 @@ userSchema.methods.addStudyPlan = function(plan: StudyPlan) {
 // Method to add a resource
 userSchema.methods.addResource = function(resource: Resource) {
   this.savedResources.push(resource);
-  return this.save();
-};
-
-// Method to update study stats
-userSchema.methods.updateStudyStats = function(hours: number) {
-  this.stats.totalStudyHours += hours;
-  this.stats.lastStudyDate = new Date();
   return this.save();
 };
 

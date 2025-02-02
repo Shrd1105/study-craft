@@ -1,112 +1,201 @@
 "use client"
-import { useRouter } from 'next/navigation';
-import { BookOpen, Brain, BarChart, Clock, Book } from 'lucide-react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+
+import { useEffect, useState } from 'react';
+import { ContributionCalendar } from 'react-contribution-calendar';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { useSession } from 'next-auth/react';
+
+interface StudySession {
+  duration: number;
+  startTime: string;
+  endTime: string;
+  mode: string;
+}
+
+interface DailySession {
+  count: number;
+  totalDuration: number;
+  sessions: StudySession[];
+}
+
+interface StudyStats {
+  currentStreak: number;
+  bestStreak: number;
+  totalDays: number;
+  studySessions: {
+    [key: string]: DailySession;
+  };
+}
+
+interface CalendarData {
+  [key: string]: {
+    level: number;
+    data: {
+      count: number;
+      duration: number;
+      details: string;
+    };
+  };
+}
+
+// Custom theme for the calendar
+const customTheme = {
+  level0: '#ffffff',
+  level1: '#A9C46C',
+  level2: '#809D3C',
+  level3: '#5D8736',
+  level4: '#5D8736',
+};
 
 export default function DashboardHome() {
-  const router = useRouter();
+  const { data: session } = useSession();
+  const [studyData, setStudyData] = useState<Array<Record<string, any>>>([{}]);
+  const [stats, setStats] = useState<StudyStats>({
+    currentStreak: 0,
+    bestStreak: 0,
+    totalDays: 0,
+    studySessions: {}
+  });
+  const [loading, setLoading] = useState(true);
 
-  const stats = [
-    {
-      title: "Study Hours",
-      value: "12.5",
-      description: "Last 7 days",
-      icon: <Clock className="h-4 w-4 text-[#7fb236]" />
-    },
-    {
-      title: "Topics Covered",
-      value: "8",
-      description: "This month",
-      icon: <Book className="h-4 w-4 text-[#7fb236]" />
-    },
-    {
-      title: "Resources Saved",
-      value: "24",
-      description: "Total",
-      icon: <BookOpen className="h-4 w-4 text-[#7fb236]" />
-    },
-    {
-      title: "Study Streak",
-      value: "5 days",
-      description: "Current",
-      icon: <BarChart className="h-4 w-4 text-[#7fb236]" />
-    }
-  ];
+  useEffect(() => {
+    const fetchStudyData = async () => {
+      if (!session?.user?.id) return;
+      
+      try {
+        const response = await fetch('/api/users/stats');
+        if (!response.ok) throw new Error('Failed to fetch study data');
+        
+        const data = await response.json();
+        
+        // Transform data for calendar
+        const calendarData: CalendarData = {};
+        
+        // Process each study session
+        Object.entries(data.studySessions || {}).forEach(([date, sessionData]: [string, any]) => {
+          calendarData[date] = {
+            level: Math.min(Math.floor((sessionData.count || 0) / 2), 4),
+            data: {
+              count: sessionData.count,
+              duration: sessionData.totalDuration,
+              details: `${sessionData.count} study sessions (${Math.round(sessionData.totalDuration / 60)} minutes)`
+            }
+          };
+        });
 
-  const features = [
-    {
-      title: "Study Plan Generator",
-      description: "Create personalized study plans based on your goals and timeline. Track your progress and adjust as needed.",
-      icon: <BookOpen className="h-8 w-8 text-[#7fb236]" />,
-      path: "/study-plan",
-      metrics: "5 active plans"
-    },
-    {
-      title: "Resource Curator",
-      description: "Discover AI-curated learning resources tailored to your topics. Save and organize materials for easy access.",
-      icon: <Brain className="h-8 w-8 text-[#7fb236]" />,
-      path: "/resources",
-      metrics: "150+ resources available"
-    }
-  ];
+        setStudyData([calendarData]);
+        setStats({
+          currentStreak: data.currentStreak || 0,
+          bestStreak: data.bestStreak || 0,
+          totalDays: Object.keys(data.studySessions || {}).length,
+          studySessions: data.studySessions || {}
+        });
+      } catch (error) {
+        console.error('Error fetching study data:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchStudyData();
+
+    // Refresh data when session completes
+    const handleSessionComplete = () => {
+      setTimeout(fetchStudyData, 500);
+    };
+
+    window.addEventListener('study-session-completed', handleSessionComplete);
+    return () => {
+      window.removeEventListener('study-session-completed', handleSessionComplete);
+    };
+  }, [session]);
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   return (
-    <div>
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Dashboard</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">Last updated: Just now</span>
-        </div>
+    <div className="space-y-8">
+      <div className="flex items-center justify-between">
+        <h1 className="text-3xl font-bold text-gray-800">
+          {session?.user?.name ? `${session.user.name}'s ` : ''}Study Activity
+        </h1>
+        <span className="text-sm text-gray-600">
+          Last updated: {new Date().toLocaleDateString()}
+        </span>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        {stats.map((stat, index) => (
-          <Card key={index} className="bg-white">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                {stat.title}
-              </CardTitle>
-              <div className="w-8 h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-4 border-r-4 border-black">
-                {stat.icon}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold text-gray-800">{stat.value}</div>
-              <p className="text-xs text-gray-500 mt-1">{stat.description}</p>
-            </CardContent>
-          </Card>
-        ))}
-      </div>
+      <Card className="bg-white border-2 border-black p-6">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">
+            Your Study Contributions
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="p-0">
+          <div className="w-full">
+            <div className="min-w-full p-4" style={{width: '1200px'}}>
+              <ContributionCalendar
+                data={studyData}
+                dateOptions={{
+                  start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+                  end: new Date().toISOString().split('T')[0],
+                  daysOfTheWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                  startsOnSunday: true,
+                  includeBoundary: true,
+                }}
+                styleOptions={{
+                  theme: customTheme,
+                  cx: 18,
+                  cy: 20,
+                  cr: 5,
+                  textColor: '#1F2328'
+                }}
+                visibilityOptions={{
+                  hideDescription: false,
+                  hideMonthLabels: false,
+                  hideDayLabels: false,
+                }}
+                onCellClick={(e) => {
+                  const cellData = JSON.parse(e.currentTarget.getAttribute('data-cell') || '{}');
+                  if (cellData?.data?.count) {
+                    console.log(`${cellData.data.details}`);
+                  }
+                }}
+                scroll={false}
+              />
+            </div>
+          </div>
+        </CardContent>
+      </Card>
 
-      {/* Features Grid */}
-      <div className="grid md:grid-cols-2 gap-6">
-        {features.map((feature, index) => (
-          <Card 
-            key={index}
-            className="cursor-pointer hover:shadow-lg transition-all duration-300 bg-white"
-            onClick={() => router.push(feature.path)}
-          >
-            <CardHeader>
-              <div className="flex items-center gap-4">
-                <div className="w-12 h-12 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-4 border-r-4 border-black">
-                  {feature.icon}
-                </div>
-                <div>
-                  <CardTitle className="text-xl mb-1">{feature.title}</CardTitle>
-                  <CardDescription className="text-sm text-gray-500">{feature.metrics}</CardDescription>
-                </div>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="text-gray-600">{feature.description}</p>
-              <div className="mt-4 flex items-center text-[#7fb236] text-sm">
-                Learn more →
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <Card className="bg-white border-2 border-black">
+          <CardHeader>
+            <CardTitle className="text-lg">Current Streak</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.currentStreak} days</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-2 border-black">
+          <CardHeader>
+            <CardTitle className="text-lg">Total Study Days</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.totalDays} days</p>
+          </CardContent>
+        </Card>
+
+        <Card className="bg-white border-2 border-black">
+          <CardHeader>
+            <CardTitle className="text-lg">Best Streak</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <p className="text-3xl font-bold">{stats.bestStreak} days</p>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
-} 
+}

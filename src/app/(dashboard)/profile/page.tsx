@@ -6,14 +6,16 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { useToast } from "@/hooks/use-toast"
 import { Loader2, BookOpen, Brain, Clock } from "lucide-react"
 
 export default function ProfilePage() {
   const { data: session } = useSession()
-  const { toast } = useToast()
   const [loading, setLoading] = useState(false)
-  const [editing, setEditing] = useState(false)
+  const [isEditing, setIsEditing] = useState(false)
+  const [formData, setFormData] = useState({
+    name: session?.user?.name || '',
+    email: session?.user?.email || '',
+  })
 
   const stats = [
     {
@@ -33,23 +35,26 @@ export default function ProfilePage() {
     },
   ]
 
-  const handleUpdateProfile = async (e: React.FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
     setLoading(true)
-
+    
     try {
-      // Add API call to update profile
-      toast({
-        title: "Success",
-        description: "Profile updated successfully",
+      const response = await fetch('/api/user/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
       })
-      setEditing(false)
-    } catch (error) {
-      toast({
-        variant: "destructive",
-        title: "Error",
-        description: "Failed to update profile",
-      })
+
+      if (!response.ok) {
+        throw new Error('Failed to update profile')
+      }
+
+      setIsEditing(false)
+    } catch (err) {
+      console.error('Error updating profile:', err)
     } finally {
       setLoading(false)
     }
@@ -92,12 +97,13 @@ export default function ProfilePage() {
             ))}
           </div>
 
-          {editing ? (
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
+          {isEditing ? (
+            <form onSubmit={handleSubmit} className="space-y-4">
               <div>
                 <label className="text-sm font-medium">Name</label>
                 <Input
-                  defaultValue={session?.user?.name || ""}
+                  value={formData.name}
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="mt-1"
                   name="name"
                 />
@@ -105,7 +111,8 @@ export default function ProfilePage() {
               <div>
                 <label className="text-sm font-medium">Email</label>
                 <Input
-                  defaultValue={session?.user?.email || ""}
+                  value={formData.email}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className="mt-1"
                   name="email"
                   disabled
@@ -125,14 +132,14 @@ export default function ProfilePage() {
                 <Button
                   type="button"
                   variant="outline"
-                  onClick={() => setEditing(false)}
+                  onClick={() => setIsEditing(false)}
                 >
                   Cancel
                 </Button>
               </div>
             </form>
           ) : (
-            <Button onClick={() => setEditing(true)}>Edit Profile</Button>
+            <Button onClick={() => setIsEditing(true)}>Edit Profile</Button>
           )}
         </CardContent>
       </Card>

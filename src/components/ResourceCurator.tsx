@@ -57,7 +57,7 @@ export default function ResourceCurator() {
   };
 
   return (
-    <div className="w-full bg-[#F4FFC3] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-3xl mx-auto">
         <form onSubmit={handleCurateResources} className="space-y-4 mb-8">
           <Input

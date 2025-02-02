@@ -16,16 +16,20 @@ export default function SignInPage() {
   }, [session, router])
 
   return (
-    <div className="container mx-auto max-w-md mt-20">
-      <div className="bg-white p-8 rounded-xl border-2 border-black">
-        <h1 className="text-2xl font-bold text-center mb-6">Sign In to Mind Mentor</h1>
-        <SignInForm />
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Don't have an account?{' '}
-          <a href="/register" className="text-[#7fb236] hover:underline">
-            Sign up
-          </a>
+    <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-[#FFFAEC]">
+      <div className="sm:mx-auto sm:w-full sm:max-w-md">
+        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+          Welcome to Mind Mentor
+        </h2>
+        <p className="mt-2 text-center text-sm text-gray-600">
+          Let&apos;s get started with your study journey
         </p>
+      </div>
+
+      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
+        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 border-2 border-black ">
+          <SignInForm />
+        </div>
       </div>
     </div>
   )
