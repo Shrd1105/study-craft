@@ -20,8 +20,8 @@ interface TimerStore extends TimerState {
   tick: () => void;
 }
 
-const FOCUS_TIME = 25 * 60; // 25 minutes
-const BREAK_TIME = 5 * 60; // 5 minutes 
+const FOCUS_TIME = 1 * 60; // 25 minutes
+const BREAK_TIME = 1 * 60; // 5 minutes 
 
 export const useTimerStore = create<TimerStore>()(
   persist(

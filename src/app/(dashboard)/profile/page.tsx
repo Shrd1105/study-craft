@@ -6,7 +6,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useState } from "react"
-import { Loader2, BookOpen, Brain, Clock } from "lucide-react"
+import { Loader2} from "lucide-react"
 
 export default function ProfilePage() {
   const { data: session } = useSession()
@@ -16,24 +16,6 @@ export default function ProfilePage() {
     name: session?.user?.name || '',
     email: session?.user?.email || '',
   })
-
-  const stats = [
-    {
-      title: "Study Hours",
-      value: "12.5",
-      icon: <Clock className="h-4 w-4 text-[#7fb236]" />,
-    },
-    {
-      title: "Completed Plans",
-      value: "5",
-      icon: <BookOpen className="h-4 w-4 text-[#7fb236]" />,
-    },
-    {
-      title: "Saved Resources",
-      value: "24",
-      icon: <Brain className="h-4 w-4 text-[#7fb236]" />,
-    },
-  ]
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -79,23 +61,6 @@ export default function ProfilePage() {
           </CardTitle>
         </CardHeader>
         <CardContent className="p-6">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            {stats.map((stat, index) => (
-              <Card key={index} className="bg-white border-2 border-black">
-                <CardHeader className="flex flex-row items-center justify-between pb-2">
-                  <CardTitle className="text-sm font-medium text-gray-500">
-                    {stat.title}
-                  </CardTitle>
-                  <div className="w-8 h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-4 border-r-4 border-black">
-                    {stat.icon}
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <div className="text-2xl font-bold">{stat.value}</div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
 
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-4">
