@@ -6,6 +6,7 @@ import { FeaturesGrid } from '@/components/sections/FeatureGrid'
 import { useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import { useEffect } from 'react'
+import { ReviewMarquee } from "@/components/ReviewMarquee"
 
 export default function Page() {
   const { data: session } = useSession()
@@ -45,6 +46,14 @@ export default function Page() {
         ctaLink={session ? "/home" : "/register"}
       />
       <FeaturesGrid features={features} />
+      <section className="py-20 px-4 md:px-6 bg-[#FFFAEC]">
+        <div className="container mx-auto">
+          <h2 className="text-3xl font-bold text-center mb-12">
+            What Our Users Say
+          </h2>
+          <ReviewMarquee />
+        </div>
+      </section>
     </div>
   )
 }

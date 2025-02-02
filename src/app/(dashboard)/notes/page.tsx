@@ -82,7 +82,7 @@ export default function NotesPage() {
       <div className="grid grid-cols-12 gap-6">
         {/* Notes List Sidebar */}
         <div className="col-span-3">
-          <Card className="h-[calc(100vh-12rem)] overflow-y-auto">
+          <Card className="h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
             <CardHeader>
               <CardTitle>Your Notes</CardTitle>
             </CardHeader>
@@ -99,7 +99,7 @@ export default function NotesPage() {
 
         {/* Editor Area */}
         <div className="col-span-9">
-          <Card className="h-[calc(100vh-12rem)] overflow-y-auto">
+          <Card className="h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
             <CardContent className="p-6">
               {isCreating || selectedNote ? (
                 <NoteEditor
