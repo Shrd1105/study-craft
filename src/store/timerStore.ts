@@ -5,111 +5,81 @@ interface TimerState {
   timeLeft: number;
   isActive: boolean;
   mode: 'focus' | 'break';
-  hasCompleted: boolean;
-  minutes: number;
-  seconds: number;
-  startTimer: () => void;
-  pauseTimer: () => void;
-  resetTimer: () => void;
-  tick: () => void;
+  focusTime: number;
+  breakTime: number;
+  progress: number;
+  lastTick: number;
 }
 
 interface TimerStore extends TimerState {
-  completeSession: () => void;
-  sessionStartTime: string | null;
+  setTimeLeft: (time: number) => void;
+  setMode: (mode: 'focus' | 'break') => void;
+  setIsActive: (active: boolean) => void;
+  setProgress: (progress: number) => void;
+  setFocusTime: (time: number) => void;
+  setBreakTime: (time: number) => void;
+  reset: () => void;
+  tick: () => void;
 }
-
-const FOCUS_TIME = 25 * 60; // 25 minutes
-const BREAK_TIME = 5 * 60; // 5 minutes 
 
 export const useTimerStore = create<TimerStore>()(
   persist(
     (set, get) => ({
-      timeLeft: 1500, // 25 minutes in seconds for focus session
+      timeLeft: 25 * 60,
       isActive: false,
       mode: 'focus',
-      hasCompleted: false,
-      minutes: 25,
-      seconds: 0,
-      sessionStartTime: null,
+      focusTime: 25,
+      breakTime: 5,
+      progress: 0,
+      lastTick: Date.now(),
 
-      startTimer: () => set({ isActive: true }),
-      pauseTimer: () => set({ isActive: false }),
+      setTimeLeft: (time) => set({ timeLeft: time }),
+      setMode: (mode) => set({ mode }),
+      setIsActive: (isActive) => set({ isActive, lastTick: Date.now() }),
+      setProgress: (progress) => set({ progress }),
+      setFocusTime: (time) => set({ focusTime: time }),
+      setBreakTime: (time) => set({ breakTime: time }),
 
-      resetTimer: () => {
-        const currentMode = get().mode;
-        const newMode = currentMode === 'focus' ? 'break' : 'focus';
-        const newTime = newMode === 'focus' ? 1500 : 300; // 25 mins for focus, 5 mins for break
-        const newMinutes = newMode === 'focus' ? 25 : 5;
-        
+      reset: () => {
+        const { mode, focusTime, breakTime } = get();
+        const currentTime = mode === 'focus' ? focusTime : breakTime;
         set({
-          timeLeft: newTime,
-          mode: newMode,
+          timeLeft: currentTime * 60,
           isActive: false,
-          hasCompleted: false,
-          minutes: newMinutes,
-          seconds: 0,
-        });
-      },
-
-      completeSession: () => {
-        const { mode, sessionStartTime } = get();
-        const newMode = mode === 'focus' ? 'break' : 'focus';
-        const newTime = newMode === 'focus' ? FOCUS_TIME : BREAK_TIME;
-        
-        if (mode === 'focus' && sessionStartTime) {
-          // Record completed focus session
-          fetch('/api/study-sessions', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              duration: FOCUS_TIME,
-              startTime: sessionStartTime,
-              endTime: new Date().toISOString(),
-              mode: 'focus'
-            }),
-          }).then(() => {
-            // Dispatch event for real-time updates
-            window.dispatchEvent(new CustomEvent('study-session-completed'));
-          });
-        }
-        
-        set({
-          mode: newMode,
-          timeLeft: newTime,
-          minutes: Math.floor(newTime / 60),
-          seconds: 0,
-          isActive: false,
-          hasCompleted: true,
-          sessionStartTime: null,
+          progress: 0,
+          lastTick: Date.now()
         });
       },
 
       tick: () => {
         const state = get();
-        if (state.timeLeft <= 0) {
-          set({ isActive: false, hasCompleted: true });
-          return;
+        const now = Date.now();
+        const delta = (now - state.lastTick) / 1000;
+
+        if (state.isActive && delta >= 0.1) {
+          const newTimeLeft = Math.max(0, state.timeLeft - delta);
+          const totalTime = state.mode === 'focus' ? state.focusTime * 60 : state.breakTime * 60;
+          const newProgress = ((totalTime - newTimeLeft) / totalTime) * 100;
+
+          set({
+            timeLeft: newTimeLeft,
+            progress: newProgress,
+            lastTick: now
+          });
         }
-
-        const newTimeLeft = state.timeLeft - 0.1;
-        const minutes = Math.floor(newTimeLeft / 60);
-        const seconds = Math.floor(newTimeLeft % 60);
-
-        set({
-          timeLeft: newTimeLeft,
-          minutes,
-          seconds,
-        });
-      },
+      }
     }),
     {
       name: 'timer-storage',
+      // Persist all state except lastTick
       partialize: (state) => ({
-        mode: state.mode,
         timeLeft: state.timeLeft,
-        sessionStartTime: state.sessionStartTime,
-      }),
+        isActive: state.isActive,
+        mode: state.mode,
+        focusTime: state.focusTime,
+        breakTime: state.breakTime,
+        progress: state.progress
+      })
     }
   )
 ); 

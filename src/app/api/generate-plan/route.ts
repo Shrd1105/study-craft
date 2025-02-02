@@ -75,7 +75,7 @@ async function generatePlanWithGemini(
   daysUntilExam: number, 
   examDate: string
 ) {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
   // Extract relevant content from search results
   const relevantContent = searchData.results
@@ -158,71 +158,86 @@ Ensure the plan is realistic, well-structured, and focused on mastery of the sub
 
 export async function POST(req: NextRequest) {
   try {
-    // 1. Authentication check
-    const session = await getServerSession(authOptions);
-    if (!session?.user?.id) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
-
-    // 2. Input validation
-    const { subject, examDate } = await req.json();
-    if (!subject?.trim() || !examDate) {
-      return NextResponse.json(
-        { error: "Subject and exam date are required" },
-        { status: 400 }
-      );
-    }
-
-    // 3. Calculate days until exam
-    const currentDate = new Date().toISOString().split('T')[0];
-    const daysUntilExam = Math.ceil(
-      (new Date(examDate).getTime() - new Date(currentDate).getTime()) / (1000 * 3600 * 24)
+    // Add timeout wrapper
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Operation timed out')), 50000)
     );
 
-    if (daysUntilExam < 0) {
-      return NextResponse.json(
-        { error: "Exam date must be in the future" },
-        { status: 400 }
+    const resultPromise = (async () => {
+      // 1. Authentication check
+      const session = await getServerSession(authOptions);
+      if (!session?.user?.id) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+      }
+
+      // 2. Input validation
+      const { subject, examDate } = await req.json();
+      if (!subject?.trim() || !examDate) {
+        return NextResponse.json(
+          { error: "Subject and exam date are required" },
+          { status: 400 }
+        );
+      }
+
+      // 3. Calculate days until exam
+      const currentDate = new Date().toISOString().split('T')[0];
+      const daysUntilExam = Math.ceil(
+        (new Date(examDate).getTime() - new Date(currentDate).getTime()) / (1000 * 3600 * 24)
       );
-    }
 
-    if (daysUntilExam > 365) {
-      return NextResponse.json(
-        { error: "Exam date must be within one year" },
-        { status: 400 }
+      if (daysUntilExam < 0) {
+        return NextResponse.json(
+          { error: "Exam date must be in the future" },
+          { status: 400 }
+        );
+      }
+
+      if (daysUntilExam > 365) {
+        return NextResponse.json(
+          { error: "Exam date must be within one year" },
+          { status: 400 }
+        );
+      }
+
+      // 4. Get curriculum information
+      const searchData = await searchTavily(subject);
+
+      // 5. Generate plan using the gathered information
+      const generatedPlan = await generatePlanWithGemini(
+        searchData,
+        subject,
+        daysUntilExam,
+        examDate
       );
-    }
 
-    // 4. Get curriculum information
-    const searchData = await searchTavily(subject);
+      // 6. Save to database
+      await connectMongoDB();
+      const newPlan = new StudyPlan({
+        userId: session.user.id,
+        overview: generatedPlan.overview,
+        weeklyPlans: generatedPlan.weeklyPlans,
+        recommendations: generatedPlan.recommendations,
+        isActive: true,
+        progress: 0,
+        lastUpdated: new Date()
+      });
 
-    // 5. Generate plan using the gathered information
-    const generatedPlan = await generatePlanWithGemini(
-      searchData,
-      subject,
-      daysUntilExam,
-      examDate
-    );
+      await newPlan.save();
+      return { plan: newPlan };
+    })();
 
-    // 6. Save to database
-    await connectMongoDB();
-    const newPlan = new StudyPlan({
-      userId: session.user.id,
-      overview: generatedPlan.overview,
-      weeklyPlans: generatedPlan.weeklyPlans,
-      recommendations: generatedPlan.recommendations,
-      isActive: true,
-      progress: 0,
-      lastUpdated: new Date()
-    });
-
-    await newPlan.save();
-    return NextResponse.json({ plan: newPlan });
-
+    const result = await Promise.race([resultPromise, timeoutPromise]);
+    return NextResponse.json(result);
   } catch (error) {
-    console.error("Error processing request:", error);
+    console.error("Error generating plan:", error);
+    if (error instanceof Error && error.message === 'Operation timed out') {
+      return NextResponse.json(
+        { error: "Request timed out. Please try again." },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
-      { error: "Failed to generate study plan. Please try again later." },
+      { error: "Failed to generate plan" },
       { status: 500 }
     );
   }

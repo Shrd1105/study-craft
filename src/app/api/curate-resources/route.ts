@@ -31,21 +31,33 @@ interface Resource {
 interface ExtractResult {
   url: string;
   raw_content: string;
+  images?: string[];
 }
 
 interface ExtractResponse {
   results: ExtractResult[];
+  response_time?: number;
 }
+
+// Add caching for Tavily results
+const CACHE_DURATION = 1000 * 60 * 60; // 1 hour
+const searchCache = new Map();
 
 // Function to search using Tavily API with proper error handling
 async function searchTavily(subject: string): Promise<TavilyResponse> {
   try {
-    if (!TAVILY_API_KEY) {
-      console.error("TAVILY_API_KEY is not configured");
-      return { results: [], answer: '' };
+    // Check cache first
+    const cacheKey = subject.toLowerCase().trim();
+    const cachedResult = searchCache.get(cacheKey);
+    if (cachedResult && Date.now() - cachedResult.timestamp < CACHE_DURATION) {
+      return cachedResult.data;
     }
 
-    // First use search API to get relevant results
+    if (!TAVILY_API_KEY) {
+      throw new Error("TAVILY_API_KEY is not configured");
+    }
+
+    // First use search API
     const searchResponse = await fetch('https://api.tavily.com/search', {
       method: 'POST',
       headers: {
@@ -55,8 +67,8 @@ async function searchTavily(subject: string): Promise<TavilyResponse> {
       body: JSON.stringify({
         query: `best learning resources and courses for ${subject}`,
         search_depth: "advanced",
-        include_answer: true,
-        max_results: 10,
+        include_answer: false,
+        max_results: 10, // Increased from 5 to 10 to get more results
         include_domains: [
           "coursera.org",
           "edx.org", 
@@ -64,8 +76,10 @@ async function searchTavily(subject: string): Promise<TavilyResponse> {
           "khanacademy.org",
           "freecodecamp.org",
           "w3schools.com",
-          "mit.edu",
-          "stanford.edu"
+          "codecademy.com",
+          "pluralsight.com",
+          "youtube.com",
+          "medium.com"
         ]
       })
     });
@@ -77,10 +91,10 @@ async function searchTavily(subject: string): Promise<TavilyResponse> {
     const searchData = await searchResponse.json() as TavilyResponse;
     console.log("Tavily search results:", searchData);
 
-    // Then use extract API to get more details about each URL
+    // Then use extract API to get more details
     const validUrls = searchData.results
-      .map((result: TavilySearchResult) => result.url)
-      .filter((url: string) => {
+      .map(result => result.url)
+      .filter(url => {
         try {
           new URL(url);
           return true;
@@ -89,37 +103,47 @@ async function searchTavily(subject: string): Promise<TavilyResponse> {
         }
       });
 
-    const extractResponse = await fetch('https://api.tavily.com/extract', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${TAVILY_API_KEY}`
-      },
-      body: JSON.stringify({
-        urls: validUrls
-      })
-    });
+    if (validUrls.length > 0) {
+      try {
+        const extractResponse = await fetch('https://api.tavily.com/extract', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${TAVILY_API_KEY}`
+          },
+          body: JSON.stringify({
+            urls: validUrls
+          })
+        });
 
-    if (!extractResponse.ok) {
-      throw new Error(`Tavily extract failed: ${extractResponse.statusText}`);
+        if (extractResponse.ok) {
+          const extractData = await extractResponse.json() as ExtractResponse;
+          console.log("Tavily extract results:", extractData);
+
+          // Enhance search results with extracted content
+          const enhancedResults = searchData.results.map(result => {
+            const extractInfo = extractData.results.find(e => e.url === result.url);
+            return {
+              ...result,
+              content: extractInfo?.raw_content || result.content
+            };
+          });
+
+          searchData.results = enhancedResults;
+        }
+      } catch (error) {
+        console.error("Extract API error:", error);
+        // Continue with original search results if extract fails
+      }
     }
-
-    const extractData = await extractResponse.json() as ExtractResponse;
-    console.log("Tavily extract results:", extractData);
-
-    // Combine search and extract results
-    const enhancedResults = searchData.results.map((result: TavilySearchResult) => {
-      const extractInfo = extractData.results.find((e: ExtractResult) => e.url === result.url);
-      return {
-        ...result,
-        content: extractInfo?.raw_content || result.content
-      };
+    
+    // Cache the enhanced results
+    searchCache.set(cacheKey, {
+      timestamp: Date.now(),
+      data: searchData
     });
 
-    return {
-      results: enhancedResults,
-      answer: searchData.answer
-    };
+    return searchData;
   } catch (error) {
     console.error("Tavily API error:", error);
     throw error;
@@ -128,10 +152,10 @@ async function searchTavily(subject: string): Promise<TavilyResponse> {
 
 // Function to curate resources using Gemini
 async function curateResourcesWithGemini(searchData: TavilyResponse, subject: string) {
-  const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+  const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
 
   const relevantContent = searchData.results
-    .filter(result => result.score > 0.7)
+    .filter(result => result.score > 0.5) // Lowered score threshold to get more results
     .map(result => ({
       title: result.title,
       url: result.url,
@@ -157,10 +181,22 @@ async function curateResourcesWithGemini(searchData: TavilyResponse, subject: st
       url: `https://ocw.mit.edu/search/?q=${encodeURIComponent(subject)}`,
       description: "Free access to MIT course materials",
       benefits: ["University-level content", "Comprehensive materials"]
+    },
+    {
+      title: "W3Schools",
+      url: `https://www.w3schools.com/search/search.php?q=${encodeURIComponent(subject)}`,
+      description: "Interactive tutorials and references",
+      benefits: ["Interactive examples", "Beginner-friendly"]
+    },
+    {
+      title: "Codecademy",
+      url: `https://www.codecademy.com/search?query=${encodeURIComponent(subject)}`,
+      description: "Interactive coding lessons and projects",
+      benefits: ["Hands-on practice", "Immediate feedback"]
     }
   ];
 
-  const prompt = `As an expert educator, curate the top 5 most relevant and high-quality free learning resources for ${subject}.
+  const prompt = `As an expert educator, curate exactly 5 of the most relevant and high-quality free learning resources for ${subject}.
 
 ${searchData.answer ? `Context from search:\n${searchData.answer}\n` : ''}
 
@@ -169,7 +205,7 @@ ${relevantContent.length > 0
   : `Using default resources:\n${JSON.stringify(defaultResources, null, 2)}\n`
 }
 
-Create a curated list of the 5 best resources. For each resource:
+Create a curated list of exactly 5 best resources. For each resource:
 1. Verify it's freely accessible
 2. Ensure it's suitable for learning ${subject}
 3. Include a brief but informative description
@@ -185,7 +221,9 @@ Return the list in this JSON format:
       "benefits": ["Benefit 1", "Benefit 2"]
     }
   ]
-}`;
+}
+
+Important: The response MUST contain exactly 5 resources.`;
 
   try {
     const result = await model.generateContent(prompt);
@@ -196,8 +234,9 @@ Return the list in this JSON format:
     const cleanedText = text.replace(/```json\s*|\s*```/g, '').trim();
     const resources = JSON.parse(cleanedText);
 
-    if (!resources.resources || !Array.isArray(resources.resources)) {
-      throw new Error("Invalid resources format");
+    if (!resources.resources || !Array.isArray(resources.resources) || resources.resources.length !== 5) {
+      console.log("Invalid number of resources, using defaults");
+      return { resources: defaultResources };
     }
 
     // Validate each resource has required fields
@@ -326,29 +365,39 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Get resource information
-    const searchData = await searchTavily(subject);
+    // Set timeout for the entire operation
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('Operation timed out')), 50000)
+    );
 
-    // Generate curated resources
-    const curatedResources = await curateResourcesWithGemini(searchData, subject);
+    const resultPromise = (async () => {
+      const searchData = await searchTavily(subject);
+      const curatedResources = await curateResourcesWithGemini(searchData, subject);
+      const transformedResources = transformResourceData(curatedResources.resources);
 
-    // Transform the resources to match our schema
-    const transformedResources = transformResourceData(curatedResources.resources);
+      await connectMongoDB();
+      const newResources = new CuratedResource({
+        userId: session.user.id,
+        topic: subject,
+        resources: transformedResources,
+        lastUpdated: new Date()
+      });
 
-    // Save to database
-    await connectMongoDB();
-    const newResources = new CuratedResource({
-      userId: session.user.id,
-      topic: subject, // Changed from subject to topic to match schema
-      resources: transformedResources,
-      lastUpdated: new Date()
-    });
+      await newResources.save();
+      return transformedResources;
+    })();
 
-    await newResources.save();
-    return NextResponse.json({ resources: transformedResources });
+    const resources = await Promise.race([resultPromise, timeoutPromise]);
+    return NextResponse.json({ resources });
 
   } catch (error) {
     console.error("Error processing request:", error);
+    if (error instanceof Error && error.message === 'Operation timed out') {
+      return NextResponse.json(
+        { error: "Request timed out. Please try again." },
+        { status: 504 }
+      );
+    }
     return NextResponse.json(
       { error: "Failed to curate resources. Please try again later." },
       { status: 500 }

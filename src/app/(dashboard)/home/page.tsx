@@ -109,16 +109,16 @@ export default function DashboardHome() {
 
     fetchStudyData();
 
-    // Refresh data when session completes
+    // Listen for session completion events
     const handleSessionComplete = () => {
-      setTimeout(fetchStudyData, 500);
+      setTimeout(fetchStudyData, 1000); // Slight delay to ensure server has processed the update
     };
 
     window.addEventListener('study-session-completed', handleSessionComplete);
     return () => {
       window.removeEventListener('study-session-completed', handleSessionComplete);
     };
-  }, [session]);
+  }, [session?.user?.id]);
 
   if (loading) {
     return <div>Loading...</div>;
