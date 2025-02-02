@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Brain, Home, Timer } from "lucide-react"
+import { BookOpen, Brain, FileText, Home, Timer } from "lucide-react"
 
 export function DashboardNav({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
@@ -34,12 +34,12 @@ export function DashboardNav({ className, ...props }: React.HTMLAttributes<HTMLD
       color: 'text-orange-700',
       href: '/timer',
     },
-    // {
-    //   label: 'Analytics',
-    //   icon: BarChart,
-    //   color: 'text-emerald-500',
-    //   href: '/analytics',
-    // },
+    {
+      label: 'Notes',
+      icon: FileText,
+      color: 'text-emerald-500',
+      href: '/notes',
+    },
     // {
     //   label: 'Settings',
     //   icon: Settings,

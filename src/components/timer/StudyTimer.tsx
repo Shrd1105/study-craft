@@ -52,8 +52,8 @@ export function StudyTimer() {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
-              duration: 60,
-              startTime: new Date(Date.now() - 60000).toISOString(),
+              duration: 1500, // 25 minutes in seconds
+              startTime: new Date(Date.now() - 1500000).toISOString(), // 25 minutes ago
               endTime: new Date().toISOString(),
               mode: 'focus'
             }),
@@ -68,7 +68,7 @@ export function StudyTimer() {
           // Show completion alert
           toast({
             title: "Focus Session Complete! 🎉",
-            description: `Current streak: ${data.stats.currentStreak} days!`,
+            description: `Current streak: ${data.stats.currentStreak} days! Time for a 5-minute break.`,
             duration: 5000,
           });
 
@@ -86,7 +86,7 @@ export function StudyTimer() {
       } else if (timer.timeLeft === 0 && timer.mode === 'break' && timer.hasCompleted) {
         toast({
           title: "Break Time Over",
-          description: "Ready to focus again?",
+          description: "Ready for another 25-minute focus session?",
           duration: 5000,
         });
       }

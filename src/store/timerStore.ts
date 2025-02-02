@@ -2,64 +2,53 @@ import { create } from 'zustand';
 import { persist } from 'zustand/middleware';
 
 interface TimerState {
-  minutes: number;
-  seconds: number;
+  timeLeft: number;
   isActive: boolean;
   mode: 'focus' | 'break';
-  timeLeft: number;
-  startTime: number | null;
-  hasCompleted: boolean; // Track if current session is completed
-  sessionStartTime: string | null; // Add this to track session start
-}
-
-interface TimerStore extends TimerState {
+  hasCompleted: boolean;
+  minutes: number;
+  seconds: number;
   startTimer: () => void;
   pauseTimer: () => void;
   resetTimer: () => void;
-  completeSession: () => void;
   tick: () => void;
 }
 
-const FOCUS_TIME = 1 * 60; // 25 minutes
-const BREAK_TIME = 1 * 60; // 5 minutes 
+interface TimerStore extends TimerState {
+  completeSession: () => void;
+  sessionStartTime: string | null;
+}
+
+const FOCUS_TIME = 25 * 60; // 25 minutes
+const BREAK_TIME = 5 * 60; // 5 minutes 
 
 export const useTimerStore = create<TimerStore>()(
   persist(
     (set, get) => ({
-      minutes: Math.floor(FOCUS_TIME / 60),
-      seconds: 0,
+      timeLeft: 1500, // 25 minutes in seconds for focus session
       isActive: false,
       mode: 'focus',
-      timeLeft: FOCUS_TIME,
-      startTime: null,
       hasCompleted: false,
+      minutes: 25,
+      seconds: 0,
       sessionStartTime: null,
 
-      startTimer: () => {
-        const now = Date.now();
-        set({
-          isActive: true,
-          startTime: now - ((FOCUS_TIME - get().timeLeft) * 1000),
-          hasCompleted: false,
-          sessionStartTime: new Date().toISOString(), // Track when session started
-        });
-      },
-
-      pauseTimer: () => {
-        set({ isActive: false });
-      },
+      startTimer: () => set({ isActive: true }),
+      pauseTimer: () => set({ isActive: false }),
 
       resetTimer: () => {
-        const { mode } = get();
-        const newTime = mode === 'focus' ? FOCUS_TIME : BREAK_TIME;
+        const currentMode = get().mode;
+        const newMode = currentMode === 'focus' ? 'break' : 'focus';
+        const newTime = newMode === 'focus' ? 1500 : 300; // 25 mins for focus, 5 mins for break
+        const newMinutes = newMode === 'focus' ? 25 : 5;
+        
         set({
           timeLeft: newTime,
-          minutes: Math.floor(newTime / 60),
-          seconds: 0,
+          mode: newMode,
           isActive: false,
-          startTime: null,
           hasCompleted: false,
-          sessionStartTime: null,
+          minutes: newMinutes,
+          seconds: 0,
         });
       },
 
@@ -91,31 +80,27 @@ export const useTimerStore = create<TimerStore>()(
           minutes: Math.floor(newTime / 60),
           seconds: 0,
           isActive: false,
-          startTime: null,
           hasCompleted: true,
           sessionStartTime: null,
         });
       },
 
       tick: () => {
-        const { isActive, startTime, timeLeft, hasCompleted } = get();
-        if (!isActive || !startTime || hasCompleted) return;
-
-        const now = Date.now();
-        const elapsed = Math.floor((now - startTime) / 1000);
-        const newTimeLeft = Math.max(0, FOCUS_TIME - elapsed);
-
-        if (newTimeLeft !== timeLeft) {
-          set({
-            timeLeft: newTimeLeft,
-            minutes: Math.floor(newTimeLeft / 60),
-            seconds: newTimeLeft % 60,
-          });
-
-          if (newTimeLeft === 0 && !hasCompleted) {
-            get().completeSession();
-          }
+        const state = get();
+        if (state.timeLeft <= 0) {
+          set({ isActive: false, hasCompleted: true });
+          return;
         }
+
+        const newTimeLeft = state.timeLeft - 0.1;
+        const minutes = Math.floor(newTimeLeft / 60);
+        const seconds = Math.floor(newTimeLeft % 60);
+
+        set({
+          timeLeft: newTimeLeft,
+          minutes,
+          seconds,
+        });
       },
     }),
     {

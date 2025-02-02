@@ -1,0 +1,111 @@
+"use client"
+
+import { useState } from 'react';
+import { Button } from "@/components/ui/button";
+import { File, MoreVertical, Trash2 } from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useToast } from "@/hooks/use-toast";
+
+interface Note {
+  _id: string;
+  title: string;
+  content: string;
+  updatedAt: string;
+  parentId: string | null;
+}
+
+interface NotesListProps {
+  notes: Note[];
+  selectedNote: Note | null;
+  onSelectNote: (note: Note) => void;
+  onRefresh: () => void;
+}
+
+export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh }: NotesListProps) {
+  const { toast } = useToast();
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const handleDelete = async (noteId: string) => {
+    try {
+      setDeleting(noteId);
+      const response = await fetch(`/api/notes/${noteId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) throw new Error('Failed to delete note');
+
+      toast({
+        title: "Success",
+        description: "Note deleted successfully",
+      });
+
+      onRefresh();
+    } catch (error) {
+      console.error('Error deleting note:', error);
+      toast({
+        title: "Error",
+        description: "Failed to delete note",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  if (notes.length === 0) {
+    return (
+      <div className="flex flex-col items-center justify-center h-40 text-gray-500">
+        <File className="h-8 w-8 mb-2" />
+        <p>No notes yet</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-2">
+      {notes.map((note) => (
+        <div
+          key={note._id}
+          className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-100 ${
+            selectedNote?._id === note._id ? 'bg-gray-100' : ''
+          }`}
+          onClick={() => onSelectNote(note)}
+        >
+          <div className="flex items-center space-x-3 flex-1 min-w-0">
+            <File className="h-4 w-4 text-gray-500 flex-shrink-0" />
+            <span className="truncate">{note.title || 'Untitled'}</span>
+          </div>
+          
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                className="h-8 w-8 p-0"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <MoreVertical className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end">
+              <DropdownMenuItem
+                className="text-red-600"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  handleDelete(note._id);
+                }}
+              >
+                <Trash2 className="h-4 w-4 mr-2" />
+                Delete
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
+      ))}
+    </div>
+  );
+} 
