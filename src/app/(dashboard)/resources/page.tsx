@@ -32,7 +32,7 @@ export default function ResourcesPage() {
       
       if (data.resources && Array.isArray(data.resources)) {
         // Validate the structure of each resource
-        const validResources = data.resources.filter((resource: any) => {
+        const validResources = data.resources.filter((resource: CuratedResource) => {
           return resource && 
                  resource._id && 
                  resource.topic && 
