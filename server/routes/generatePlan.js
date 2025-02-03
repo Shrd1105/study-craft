@@ -46,28 +46,24 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Check if a plan already exists for this subject and date
+    // Check for any existing active plans with same subject
     const existingPlan = await StudyPlan.findOne({
       userId,
-      'overview.subject': subject,
-      'overview.examDate': examDate,
+      'overview.subject': { $regex: new RegExp(subject, 'i') }, // Case insensitive match
       isActive: true
     });
 
     if (existingPlan) {
       return res.status(400).json({
         success: false,
-        error: 'A plan for this subject and date already exists'
+        error: 'An active plan for this subject already exists'
       });
     }
 
-    // Generate plan
+    // Generate and save plan
     const plan = await generatePlanWithGemini(subject, userId, examDate);
-    
-    // Save plan directly from aiService
     const savedPlan = await plan.save();
 
-    // Return only the saved plan
     res.json({ 
       success: true, 
       plan: savedPlan 
