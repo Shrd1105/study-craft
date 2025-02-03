@@ -1,4 +1,5 @@
 const { GoogleGenerativeAI } = require('@google/generative-ai');
+const StudyPlan = require('../models/studyPlan');
 
 const genAI = new GoogleGenerativeAI(process.env.GOOGLE_API_KEY);
 
@@ -75,7 +76,7 @@ async function generatePlanWithGemini(subject, userId, examDate) {
 
   const prompt = `Create a detailed study plan for ${subject} with ${daysUntilExam} days until the exam on ${examDate}.
 
-Your task is to create a comprehensive study plan. Return ONLY a valid JSON object with this exact structure:
+Your task is to create a comprehensive study plan. Return ONLY a valid JSON object with this exact structure, no markdown:
 
 {
   "overview": {
@@ -97,27 +98,47 @@ Your task is to create a comprehensive study plan. Return ONLY a valid JSON obje
     }
   ],
   "recommendations": ["Tip 1", "Tip 2"]
-}
-
-Important: Return ONLY the JSON object, no additional text or formatting.`;
+}`;
 
   try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
     
-    // Clean the response text
-    const cleanJson = text.replace(/```json\s*|\s*```/g, '').trim();
+    // Clean the response text and remove any markdown
+    let cleanJson = text.replace(/```json\s*|\s*```/g, '').trim();
+    
+    // Additional cleaning if needed
+    if (cleanJson.startsWith('```') && cleanJson.endsWith('```')) {
+      cleanJson = cleanJson.slice(3, -3);
+    }
     
     try {
       // Attempt to parse the JSON
       const parsedPlan = JSON.parse(cleanJson);
       
+      // Validate the required fields
+      if (!parsedPlan.overview || !parsedPlan.weeklyPlans || !parsedPlan.recommendations) {
+        throw new Error('Missing required fields in plan structure');
+      }
+      
       // Create a new StudyPlan instance
       const plan = new StudyPlan({
         userId,
-        overview: parsedPlan.overview,
-        weeklyPlans: parsedPlan.weeklyPlans,
+        overview: {
+          subject: parsedPlan.overview.subject,
+          duration: parsedPlan.overview.duration,
+          examDate: parsedPlan.overview.examDate
+        },
+        weeklyPlans: parsedPlan.weeklyPlans.map(week => ({
+          week: week.week,
+          goals: week.goals,
+          dailyTasks: week.dailyTasks.map(task => ({
+            day: task.day,
+            tasks: task.tasks,
+            duration: task.duration
+          }))
+        })),
         recommendations: parsedPlan.recommendations,
         isActive: true,
         progress: 0,
