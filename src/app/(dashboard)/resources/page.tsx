@@ -6,22 +6,22 @@ import { StoredResources } from "@/components/resources/StoredResources";
 import { Separator } from "@/components/ui/separator";
 import type { CuratedResource } from "@/components/resources/StoredResources";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { apiClient } from "@/lib/api-client";
 
 export default function ResourcesPage() {
+  const { data: session } = useSession();
   const [storedResources, setStoredResources] = useState<CuratedResource[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchStoredResources();
-  }, []);
+    fetchResources();
+  }, [session]);
 
-  const fetchStoredResources = async () => {
+  const fetchResources = async () => {
+    if (!session?.user?.id) return;
     try {
-      const response = await fetch("/api/curate-resources");
-      if (!response.ok) {
-        throw new Error("Failed to fetch resources");
-      }
-      const data = await response.json();
+      const data = await apiClient.getCuratedResources(session.user.id);
       console.log("Fetched resources data:", data);
       
       if (data.error) {
@@ -57,6 +57,16 @@ export default function ResourcesPage() {
     setStoredResources(resources => resources.filter(resource => resource._id !== resourceId));
   };
 
+  const handleCreateResources = async (subject: string) => {
+    if (!session?.user?.id) return;
+    try {
+      const data = await apiClient.createCuratedResources(session.user.id, subject);
+      // Handle the response
+    } catch (error) {
+      console.error('Error creating resources:', error);
+    }
+  };
+
   return (
     <div className="p-8">
       <div className="flex items-center justify-between mb-8">
@@ -66,7 +76,7 @@ export default function ResourcesPage() {
         </div>
       </div>
       <div className="max-w-10xl">
-        <ResourceCurator />
+        <ResourceCurator onCreateResources={handleCreateResources} />
       </div>
 
       {/* Stored Resources Section */}

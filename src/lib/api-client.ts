@@ -1,0 +1,55 @@
+const API_BASE_URL = process.env.EXPRESS_BACKEND_URL || 'http://localhost:5000';
+
+export const apiClient = {
+  async getCuratedResources(userId: string) {
+    const response = await fetch(`${API_BASE_URL}/curate-resources/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch resources');
+    }
+    return response.json();
+  },
+
+  async createCuratedResources(userId: string, subject: string) {
+    const response = await fetch(`${API_BASE_URL}/curate-resources`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, subject }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create resources');
+    }
+    return response.json();
+  },
+
+  async getStudyPlan(userId: string) {
+    const response = await fetch(`${API_BASE_URL}/generate-plan/${userId}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to fetch study plan');
+    }
+    return response.json();
+  },
+
+  async createStudyPlan(userId: string, subject: string, examDate: string) {
+    const response = await fetch(`${API_BASE_URL}/generate-plan`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ userId, subject, examDate }),
+    });
+    if (!response.ok) {
+      throw new Error('Failed to create study plan');
+    }
+    return response.json();
+  },
+}; 

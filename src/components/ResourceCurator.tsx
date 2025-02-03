@@ -16,10 +16,10 @@ interface Resource {
 }
 
 interface ResourceCuratorProps {
-  onResourceGenerated?: (resources: Resource[]) => void;
+  onCreateResources: (subject: string) => Promise<void>;
 }
 
-export default function ResourceCurator({ onResourceGenerated }: ResourceCuratorProps) {
+export default function ResourceCurator({ onCreateResources }: ResourceCuratorProps) {
   const [subject, setSubject] = useState('');
   const [resources, setResources] = useState<Resource[]>([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -39,7 +39,6 @@ export default function ResourceCurator({ onResourceGenerated }: ResourceCurator
       const data = await response.json();
       if (response.ok) {
         setResources(data.resources);
-        onResourceGenerated?.(data.resources);
         toast({
           title: "Resources Found",
           description: `Found ${data.resources.length} resources for ${subject}`,
