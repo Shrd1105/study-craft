@@ -47,35 +47,35 @@ router.post('/', async (req, res) => {
       });
     }
 
-    const daysUntilExam = Math.ceil(
-      (new Date(examDate).getTime() - new Date().getTime()) / (1000 * 3600 * 24)
-    );
+    // Check if a plan already exists for this subject and date
+    const existingPlan = await StudyPlan.findOne({
+      userId,
+      'overview.subject': subject,
+      'overview.examDate': examDate
+    });
 
-    if (daysUntilExam < 0) {
-      return res.status(400).json({ 
-        success: false, 
-        error: 'Exam date must be in the future' 
+    if (existingPlan) {
+      return res.status(400).json({
+        success: false,
+        error: 'A plan for this subject and date already exists'
       });
     }
 
-    // Get curriculum information
-    const searchData = await searchTavily(subject);
-    
-    // Generate plan
+    // Generate and save the new plan
     const plan = await generatePlanWithGemini(
-      searchData,
       subject,
-      daysUntilExam,
+      userId,
       examDate
     );
-    
+
     // Save plan
-    const savedPlan = await savePlan(userId, plan);
-    
+    const savedPlan = await plan.save();
+
     res.json({ 
       success: true, 
       plan: savedPlan 
     });
+
   } catch (error) {
     console.error('Error in plan generation:', error);
     res.status(500).json({ 
@@ -89,36 +89,26 @@ router.post('/', async (req, res) => {
 router.delete('/:planId', async (req, res) => {
   try {
     const { planId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
-      return res.status(400).json({
-        success: false,
-        error: 'userId is required'
-      });
-    }
-
-    const plan = await StudyPlan.findOneAndDelete({
-      _id: planId,
-      userId: userId,
-    });
-
-    if (!plan) {
+    
+    const deletedPlan = await StudyPlan.findByIdAndDelete(planId);
+    
+    if (!deletedPlan) {
       return res.status(404).json({
         success: false,
-        error: 'Study plan not found'
+        error: 'Plan not found'
       });
     }
 
     res.json({
       success: true,
-      message: 'Study plan deleted successfully'
+      message: 'Plan deleted successfully'
     });
+
   } catch (error) {
-    console.error('Error deleting study plan:', error);
+    console.error('Error deleting plan:', error);
     res.status(500).json({
       success: false,
-      error: 'Failed to delete study plan'
+      error: 'Failed to delete plan'
     });
   }
 });

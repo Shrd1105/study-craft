@@ -58,4 +58,30 @@ export const apiClient = {
     }
     return response.json();
   },
+
+  async deleteStudyPlan(planId: string) {
+    const response = await fetch(`${API_BASE_URL}/generate-plan/${planId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete plan');
+    }
+    return response.json();
+  },
+
+  async deleteCuratedResources(resourceId: string) {
+    const response = await fetch(`${API_BASE_URL}/curate-resources/${resourceId}`, {
+      method: 'DELETE',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      throw new Error('Failed to delete resources');
+    }
+    return response.json();
+  }
 }; 

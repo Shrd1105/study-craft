@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { ExternalLink } from "lucide-react";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 
 export interface Resource {
   _id: string;
@@ -27,24 +28,24 @@ interface StoredResourcesProps {
 }
 
 export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
+  const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      const response = await fetch(`/api/curate-resources/${resource._id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete resources');
-      }
-
+      await apiClient.deleteCuratedResources(resource._id);
       onDelete(resource._id);
-      toast.success("Resources deleted successfully");
+      toast({
+        title: "Success",
+        description: "Resources deleted successfully",
+      });
     } catch (error) {
-      console.error('Error deleting resources:', error);
-      toast.error("Failed to delete resources");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete resources",
+      });
     } finally {
       setIsDeleting(false);
     }

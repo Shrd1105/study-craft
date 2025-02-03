@@ -4,7 +4,8 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
+import { useToast } from "@/hooks/use-toast";
+import { apiClient } from "@/lib/api-client";
 
 export interface Task {
   day: string;
@@ -39,24 +40,24 @@ interface StoredPlanProps {
 }
 
 export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
+  const { toast } = useToast();
   const [isDeleting, setIsDeleting] = useState(false);
 
   const handleDelete = async () => {
     try {
       setIsDeleting(true);
-      const response = await fetch(`/api/study-plan/${plan._id}`, {
-        method: 'DELETE',
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to delete plan');
-      }
-
+      await apiClient.deleteStudyPlan(plan._id);
       onDelete(plan._id);
-      toast.success("Study plan deleted successfully");
+      toast({
+        title: "Success",
+        description: "Study plan deleted successfully",
+      });
     } catch (error) {
-      console.error('Error deleting plan:', error);
-      toast.error("Failed to delete study plan");
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Failed to delete study plan",
+      });
     } finally {
       setIsDeleting(false);
     }
