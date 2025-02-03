@@ -40,7 +40,7 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
         title: "Success",
         description: "Resources deleted successfully",
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",

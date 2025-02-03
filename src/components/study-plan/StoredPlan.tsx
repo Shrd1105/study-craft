@@ -52,7 +52,7 @@ export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
         title: "Success",
         description: "Study plan deleted successfully",
       });
-    } catch (error) {
+    } catch {
       toast({
         variant: "destructive",
         title: "Error",
