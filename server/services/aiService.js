@@ -65,16 +65,18 @@ Return the list in this JSON format:
   }
 }
 
-async function generatePlanWithGemini(searchData, subject, daysUntilExam, examDate) {
+async function generatePlanWithGemini(subject, userId, examDate) {
   const model = genAI.getGenerativeModel({ model: "gemini-1.5-pro" });
+
+  // Calculate days until exam
+  const daysUntilExam = Math.ceil(
+    (new Date(examDate) - new Date()) / (1000 * 60 * 60 * 24)
+  );
 
   const prompt = `Create a detailed study plan for ${subject} with ${daysUntilExam} days until the exam on ${examDate}.
 
-${searchData.answer ? `Context from research:\n${searchData.answer}\n` : ''}
+Your task is to create a comprehensive study plan. Return ONLY a valid JSON object with this exact structure:
 
-Create a comprehensive study plan that includes weekly segments and daily tasks.
-
-Return the plan in this JSON format:
 {
   "overview": {
     "subject": "${subject}",
@@ -83,11 +85,11 @@ Return the plan in this JSON format:
   },
   "weeklyPlans": [
     {
-      "week": "Week X",
+      "week": "Week 1",
       "goals": ["Goal 1", "Goal 2"],
       "dailyTasks": [
         {
-          "day": "Day Y",
+          "day": "YYYY-MM-DD (Day X)",
           "tasks": ["Task 1", "Task 2"],
           "duration": "X hours"
         }
@@ -95,13 +97,39 @@ Return the plan in this JSON format:
     }
   ],
   "recommendations": ["Tip 1", "Tip 2"]
-}`;
+}
+
+Important: Return ONLY the JSON object, no additional text or formatting.`;
 
   try {
     const result = await model.generateContent(prompt);
     const response = await result.response;
     const text = response.text();
-    return JSON.parse(text.replace(/```json\s*|\s*```/g, '').trim());
+    
+    // Clean the response text
+    const cleanJson = text.replace(/```json\s*|\s*```/g, '').trim();
+    
+    try {
+      // Attempt to parse the JSON
+      const parsedPlan = JSON.parse(cleanJson);
+      
+      // Create a new StudyPlan instance
+      const plan = new StudyPlan({
+        userId,
+        overview: parsedPlan.overview,
+        weeklyPlans: parsedPlan.weeklyPlans,
+        recommendations: parsedPlan.recommendations,
+        isActive: true,
+        progress: 0,
+        lastUpdated: new Date()
+      });
+
+      return plan;
+    } catch (parseError) {
+      console.error('JSON Parse Error:', parseError);
+      console.log('Raw Response:', text);
+      throw new Error('Invalid plan format received from AI');
+    }
   } catch (error) {
     console.error('Gemini error:', error);
     throw error;

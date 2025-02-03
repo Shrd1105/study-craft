@@ -62,12 +62,8 @@ router.post('/', async (req, res) => {
     }
 
     // Generate and save the new plan
-    const plan = await generatePlanWithGemini(
-      subject,
-      userId,
-      examDate
-    );
-
+    const plan = await generatePlanWithGemini(subject, userId, examDate);
+    
     // Save plan
     const savedPlan = await plan.save();
 
@@ -80,7 +76,7 @@ router.post('/', async (req, res) => {
     console.error('Error in plan generation:', error);
     res.status(500).json({ 
       success: false, 
-      error: 'Plan generation failed' 
+      error: error.message || 'Plan generation failed' 
     });
   }
 });

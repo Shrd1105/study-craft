@@ -34,6 +34,10 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
     try {
       await onCreateResources(subject);
       setSubject(""); // Clear input after successful submission
+      toast({
+        title: "Success",
+        description: "Resources generated successfully",
+      });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
@@ -51,7 +55,7 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
     <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-3xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4 mb-8">
-          <div className="flex gap-4">
+          <div className="flex items-center gap-4">
             <Input
               type="text"
               placeholder="Enter a topic to find learning resources..."
@@ -60,7 +64,7 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
               className="flex-1 bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
               disabled={loading}
             />
-            <Button type="submit" disabled={loading || !subject.trim()}>
+            <Button type="submit" disabled={loading || !subject.trim()} className="h-full">
               {loading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
