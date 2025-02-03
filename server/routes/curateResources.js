@@ -6,7 +6,7 @@ const CuratedResource = require('../models/curatedResource');
 const router = express.Router();
 
 // Get resources for a user
-router.get('/:userId', async (req, res) => {
+router.get('/:userId', async (req, res) => { 
   try {
     const { userId } = req.params;
     
