@@ -5,7 +5,6 @@ import { Input } from "@/components/ui/input";
 import StudyPlanDisplay from './StudyPlanDisplay';
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import type { StudyPlan } from "@/components/study-plan/StoredPlan";
 import { apiClient } from '@/lib/api-client';
 import { useSession } from 'next-auth/react';
@@ -46,23 +45,26 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
     setIsLoading(true);
 
     try {
-      // Making API call to generate study plan
-      const { plan } = await apiClient.createStudyPlan(
+      const response = await apiClient.createStudyPlan(
         session.user.id,
         subject,
         examDate
       );
 
-      setPlan(plan);
-      onPlanGenerated(plan);
-      
-      toast({
-        title: "Study Plan Generated",
-        description: "Your study plan is ready!",
-        action: <ToastAction altText="View plan">View plan</ToastAction>,
-      });
-
+      if (response.success && response.plan) {
+        onPlanGenerated(response.plan);
+        setPlan(response.plan);
+        setSubject('');
+        setExamDate('');
+        toast({
+          title: "Success",
+          description: "Study plan generated successfully",
+        });
+      } else {
+        throw new Error(response.error || 'Failed to generate plan');
+      }
     } catch (error) {
+      console.error('Error generating plan:', error);
       toast({
         variant: "destructive",
         title: "Error",

@@ -1,6 +1,5 @@
 const express = require('express');
-const { searchTavily, generatePlanWithGemini } = require('../services/aiService');
-const { savePlan } = require('../services/dbService');
+const { generatePlanWithGemini } = require('../services/aiService');
 const StudyPlan = require('../models/studyPlan');
 
 const router = express.Router();
@@ -51,7 +50,8 @@ router.post('/', async (req, res) => {
     const existingPlan = await StudyPlan.findOne({
       userId,
       'overview.subject': subject,
-      'overview.examDate': examDate
+      'overview.examDate': examDate,
+      isActive: true
     });
 
     if (existingPlan) {
@@ -61,12 +61,13 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Generate and save the new plan
+    // Generate plan
     const plan = await generatePlanWithGemini(subject, userId, examDate);
     
-    // Save plan
+    // Save plan directly from aiService
     const savedPlan = await plan.save();
 
+    // Return only the saved plan
     res.json({ 
       success: true, 
       plan: savedPlan 
