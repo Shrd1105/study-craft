@@ -76,40 +76,40 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-6xl mx-auto">
-        <form onSubmit={handleGeneratePlan} className="space-y-4 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleGeneratePlan} className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
             <Input
               type="text"
               placeholder="Enter your study topic..."
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
               disabled={isLoading}
             />
             <Input
               type="date"
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
-              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-lg p-6 rounded-xl"
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
               disabled={isLoading}
             />
           </div>
           <div className="flex justify-center w-full">
             <Button 
               type="submit" 
-              className="flex justify-center items-center bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
+              className="w-full sm:w-auto flex justify-center items-center bg-[#c1ff72] text-gray-800 text-base sm:text-lg py-6 px-8 rounded-xl" 
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {isLoading ? <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" /> : null}
               {isLoading ? 'Generating Your Plan...' : 'Create Study Plan'}
             </Button>
           </div>
         </form>
 
         {plan && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <StudyPlanDisplay plan={plan} />
           </div>
         )}
