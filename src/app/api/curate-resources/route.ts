@@ -11,7 +11,7 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const url = `${EXPRESS_BACKEND_URL}/curate-resources/${session.user.id}`;
+    const url = `${EXPRESS_BACKEND_URL}/curate-resources/${session.user.id}`; 
     console.log('Making request to:', url);
 
     const response = await fetch(url, {
