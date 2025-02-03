@@ -11,16 +11,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const response = await fetch(`${EXPRESS_BACKEND_URL}/api/curate-resources/${session.user.id}`, {
+    const url = `${EXPRESS_BACKEND_URL}/curate-resources/${session.user.id}`;
+    console.log('Making request to:', url);
+
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
       },
+      cache: 'no-store'
     });
 
     if (!response.ok) {
-      const error = await response.text();
-      console.error('Express backend error:', error);
-      throw new Error('Failed to fetch resources');
+      const errorText = await response.text();
+      console.error('Backend error response:', errorText);
+      throw new Error(`Backend request failed: ${errorText}`);
     }
 
     const data = await response.json();
@@ -28,7 +32,11 @@ export async function GET() {
   } catch (error) {
     console.error("Error in curate-resources route:", error);
     return NextResponse.json(
-      { error: "Failed to fetch resources", details: (error as Error).message },
+      { 
+        error: "Failed to fetch resources", 
+        details: (error as Error).message,
+        backendUrl: EXPRESS_BACKEND_URL
+      },
       { status: 500 }
     );
   }
@@ -43,7 +51,10 @@ export async function POST(req: NextRequest) {
 
     const { subject } = await req.json();
     
-    const response = await fetch(`${EXPRESS_BACKEND_URL}/api/curate-resources`, {
+    const url = `${EXPRESS_BACKEND_URL}/curate-resources`;
+    console.log('Making POST request to:', url);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -51,15 +62,26 @@ export async function POST(req: NextRequest) {
       body: JSON.stringify({
         subject,
         userId: session.user.id
-      })
+      }),
+      cache: 'no-store'
     });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error('Backend error response:', errorText);
+      throw new Error(`Backend request failed: ${errorText}`);
+    }
 
     const data = await response.json();
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error in curate resources:", error);
     return NextResponse.json(
-      { error: "Failed to curate resources" },
+      { 
+        error: "Failed to curate resources", 
+        details: (error as Error).message,
+        backendUrl: EXPRESS_BACKEND_URL
+      },
       { status: 500 }
     );
   }

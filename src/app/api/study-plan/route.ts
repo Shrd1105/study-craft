@@ -11,9 +11,10 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    console.log('Making request to:', `${EXPRESS_BACKEND_URL}/api/generate-plan/${session.user.id}`);
+    const url = `${EXPRESS_BACKEND_URL}/generate-plan/${session.user.id}`;
+    console.log('Making request to:', url);
 
-    const response = await fetch(`${EXPRESS_BACKEND_URL}/api/generate-plan/${session.user.id}`, {
+    const response = await fetch(url, {
       headers: {
         'Content-Type': 'application/json',
       },

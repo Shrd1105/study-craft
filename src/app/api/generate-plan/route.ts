@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
 
     const { subject, examDate } = await req.json();
     
-    const response = await fetch(`${EXPRESS_BACKEND_URL}/api/generate-plan`, {
+    const response = await fetch(`${EXPRESS_BACKEND_URL}/generate-plan`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
