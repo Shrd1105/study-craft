@@ -20,24 +20,24 @@ export default function Page() {
 
   const features = [
     {
-      icon: <BookOpen className="h-6 w-6 text-[#7fb236]" />,
+      icon: <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-[#7fb236]" />,
       title: "Personalized Study Plans", 
       description: "Get tailored study plans based on your goals and learning style."
     },
     {
-      icon: <Brain className="h-6 w-6 text-[#7fb236]" />,
+      icon: <Brain className="h-5 w-5 sm:h-6 sm:w-6 text-[#7fb236]" />,
       title: "AI-Curated Resources",
       description: "Access the best learning materials curated by our AI."
     },
     {
-      icon: <Clock className="h-6 w-6 text-[#7fb236]" />,
+      icon: <Clock className="h-5 w-5 sm:h-6 sm:w-6 text-[#7fb236]" />,
       title: "Time Management",
       description: "Manage your time effectively and stay on top of your studies."
     }
   ]
 
   return (
-    <div className="container mx-auto px-4 py-16">
+    <div className="container mx-auto px-4 py-8 sm:py-16">
       <HeroSection
         title="Welcome to"
         highlightedText="Mind Mentor"
@@ -46,9 +46,9 @@ export default function Page() {
         ctaLink={session ? "/home" : "/register"}
       />
       <FeaturesGrid features={features} />
-      <section className="py-20 px-4 md:px-6 bg-[#FFFAEC]">
+      <section className="py-12 sm:py-20 px-4 md:px-6 bg-[#FFFAEC]">
         <div className="container mx-auto">
-          <h2 className="text-3xl font-bold text-center mb-12">
+          <h2 className="text-2xl sm:text-3xl font-bold text-center mb-8 sm:mb-12">
             What Our Users Say
           </h2>
           <ReviewMarquee />

@@ -40,14 +40,14 @@ export function Header() {
               href={session ? "/home" : "/"} 
               className="flex items-center gap-2"
             >
-              <div className="w-8 h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-3 border-r-3 border-black">
-                <span className="text-black text-xl">🎓</span>
+              <div className="w-7 h-7 sm:w-8 sm:h-8 bg-[#c1ff72] rounded-sm flex items-center justify-center border-2 border-b-3 border-r-3 border-black">
+                <span className="text-black text-base sm:text-xl">🎓</span>
               </div>
-              <span className="font-semibold">Mind Mentor</span>
+              <span className="font-semibold text-sm sm:text-base">Mind Mentor</span>
             </Link>
           </div>
           
-          <nav className="flex items-center space-x-4">
+          <nav className="flex items-center space-x-2 sm:space-x-4">
             {isMarketing ? (
               <>
                 <TooltipProvider>
@@ -56,7 +56,7 @@ export function Header() {
                       <Link 
                         href="https://github.com/KartikLabhshetwar/mind-mentor" 
                         target="_blank"
-                        className="px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2"
+                        className="hidden sm:inline-block px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2"
                       >
                         GitHub
                       </Link>
@@ -67,16 +67,16 @@ export function Header() {
                   </Tooltip>
                 </TooltipProvider>
                 {!session ? (
-                  <div className="flex gap-2">
+                  <div className="flex gap-1 sm:gap-2">
                     <Button
                       variant="outline"
                       onClick={() => signIn()}
-                      className="border-2 border-black"
+                      className="border-2 border-black text-xs sm:text-sm px-2 sm:px-4"
                     >
                       Sign In
                     </Button>
                     <Link href="/register" passHref>
-                      <button className="px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2">
+                      <button className="px-2 sm:px-4 py-1.5 bg-[#c1ff72] border-2 border-b-4 border-r-4 border-black rounded-lg hover:bg-[#c1ff72] hover:border-b-2 hover:border-r-2 transition-all duration-100 text-xs sm:text-sm font-medium shadow-sm hover:shadow active:border-b-2 active:border-r-2">
                         Sign Up
                       </button>
                     </Link>
@@ -88,8 +88,8 @@ export function Header() {
             {session ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="ghost" className="relative h-10 w-10 rounded-full">
-                    <Avatar className="h-10 w-10 bg-[#A9C46C]">
+                  <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 bg-[#A9C46C]">
                       <AvatarImage 
                         src={session.user?.image || "/images/default-avatar.png"} 
                         alt={session.user?.name || '@user'} 
@@ -98,23 +98,23 @@ export function Header() {
                     </Avatar>
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent className="w-56 border-2 border-black" align="end" forceMount>
+                <DropdownMenuContent className="w-48 sm:w-56 border-2 border-black" align="end" forceMount>
                   <DropdownMenuLabel className="font-normal border-b-2 border-black">
-                    <div className="flex flex-col space-y-1 ">
-                      <p className="text-sm font-medium leading-none">{session.user?.name}</p>
-                      <p className="text-xs leading-none text-muted-foreground">
+                    <div className="flex flex-col space-y-1">
+                      <p className="text-xs sm:text-sm font-medium leading-none">{session.user?.name}</p>
+                      <p className="text-xs leading-none text-muted-foreground truncate">
                         {session.user?.email}
                       </p>
                     </div>
                   </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   <DropdownMenuGroup>
-                    <DropdownMenuItem onClick={() => handleNavigation('/profile')}>
+                    <DropdownMenuItem onClick={() => handleNavigation('/profile')} className="text-xs sm:text-sm">
                       Profile
                     </DropdownMenuItem>
                   </DropdownMenuGroup>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem onClick={() => signOut()}>
+                  <DropdownMenuItem onClick={() => signOut()} className="text-xs sm:text-sm">
                     Log out
                   </DropdownMenuItem>
                 </DropdownMenuContent>

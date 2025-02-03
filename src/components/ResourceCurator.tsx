@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 
 interface Resource {
   title: string;
@@ -16,40 +15,31 @@ interface Resource {
 }
 
 interface ResourceCuratorProps {
-  onResourceGenerated?: (resources: Resource[]) => void;
+  onCreateResources: (subject: string) => Promise<void>;
 }
 
-export default function ResourceCurator({ onResourceGenerated }: ResourceCuratorProps) {
-  const [subject, setSubject] = useState('');
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+export default function ResourceCurator({ onCreateResources }: ResourceCuratorProps) {
+  const [subject, setSubject] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resources] = useState<Resource[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleCurateResources = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!subject.trim()) return;
+
+    setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/curate-resources", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject }),
+      await onCreateResources(subject);
+      setSubject(""); // Clear input after successful submission
+      toast({
+        title: "Success",
+        description: "Resources generated successfully",
       });
-      const data = await response.json();
-      if (response.ok) {
-        setResources(data.resources);
-        onResourceGenerated?.(data.resources);
-        toast({
-          title: "Resources Found",
-          description: `Found ${data.resources.length} resources for ${subject}`,
-          action: <ToastAction altText="View resources">View resources</ToastAction>,
-        });
-      } else {
-        throw new Error(data.error || 'Failed to fetch resources');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
       toast({
         variant: "destructive",
@@ -57,49 +47,56 @@ export default function ResourceCurator({ onResourceGenerated }: ResourceCurator
         description: errorMessage,
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
-      <div className="max-w-3xl mx-auto">
-        <form onSubmit={handleCurateResources} className="space-y-4 mb-8">
-          <Input
-            type="text"
-            placeholder="Enter a topic to find learning resources..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
-          />
-          <div className="flex justify-center w-full">
+    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+      <div className="w-full max-w-3xl mx-auto">
+        <form onSubmit={handleSubmit} className="space-y-4 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+            <Input
+              type="text"
+              placeholder="Enter a topic to find learning resources..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex-1 bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
+              disabled={loading}
+            />
             <Button 
               type="submit" 
-              className="bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
-              disabled={isLoading}
+              disabled={loading || !subject.trim()} 
+              className="w-full sm:w-auto py-6 sm:py-0"
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-              {isLoading ? 'Curating Resources...' : 'Find Learning Resources'}
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Resources"
+              )}
             </Button>
           </div>
         </form>
 
         {resources.length > 0 && (
-          <ScrollArea className="h-[calc(100vh-400px)] w-full">
-            <div className="grid grid-cols-1 gap-10">
+          <ScrollArea className="h-[calc(100vh-400px)] sm:h-[calc(100vh-300px)] w-full">
+            <div className="grid grid-cols-1 gap-6 sm:gap-10">
               {resources.map((resource, index) => (
                 <Card key={index} className="bg-white border-2 border-black border-b-4 border-r-4">
-                  <CardHeader>
-                    <CardTitle className="text-xl text-gray-800">{resource.title}</CardTitle>
-                    <div className="text-sm text-gray-500">{resource.type}</div>
+                  <CardHeader className="p-4 sm:p-6">
+                    <CardTitle className="text-lg sm:text-xl text-gray-800">{resource.title}</CardTitle>
+                    <div className="text-xs sm:text-sm text-gray-500">{resource.type}</div>
                   </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-600 mb-4">{resource.description}</p>
+                  <CardContent className="p-4 sm:p-6">
+                    <p className="text-sm sm:text-base text-gray-600 mb-4">{resource.description}</p>
                     <a 
                       href={resource.link} 
                       target="_blank" 
                       rel="noopener noreferrer" 
-                      className="inline-flex items-center text-[#7fb236] hover:text-[#6f9826] hover:underline"
+                      className="inline-flex items-center text-[#7fb236] hover:text-[#6f9826] hover:underline text-sm sm:text-base"
                     >
                       Learn More →
                     </a>
@@ -111,7 +108,7 @@ export default function ResourceCurator({ onResourceGenerated }: ResourceCurator
         )}
         
         {error && (
-          <div className="text-red-500 mt-4 p-4 bg-red-50 rounded-lg border-2 border-red-200">
+          <div className="text-red-500 mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border-2 border-red-200 text-sm sm:text-base">
             {error}
           </div>
         )}

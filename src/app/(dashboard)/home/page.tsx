@@ -65,6 +65,19 @@ export default function DashboardHome() {
     studySessions: {}
   });
   const [loading, setLoading] = useState(true);
+  const [isMobile, setIsMobile] = useState(false);
+  const [isTablet, setIsTablet] = useState(false);
+
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth < 640);
+      setIsTablet(window.innerWidth >= 640 && window.innerWidth < 1024);
+    };
+
+    handleResize(); // Initial check
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   useEffect(() => {
     const fetchStudyData = async () => {
@@ -121,49 +134,53 @@ export default function DashboardHome() {
   }, [session?.user?.id]);
 
   if (loading) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)]">
+        <div className="animate-pulse text-base sm:text-lg">Loading...</div>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-8">
-      <div className="flex items-center justify-between">
-        <h1 className="text-3xl font-bold text-gray-800">
+    <div className="space-y-4 px-2 py-4 sm:p-4 md:space-y-8 md:p-6 lg:p-8">
+      <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
+        <h1 className="text-lg sm:text-xl font-bold text-gray-800 md:text-2xl lg:text-3xl">
           {session?.user?.name ? `${session.user.name}'s ` : ''}Study Activity
         </h1>
-        <span className="text-sm text-gray-600">
+        <span className="text-xs text-gray-600 sm:text-sm">
           Last updated: {new Date().toLocaleDateString()}
         </span>
       </div>
 
-      <Card className="bg-white border-2 border-black p-6">
-        <CardHeader>
-          <CardTitle className="text-xl font-semibold">
+      <Card className="bg-white border-2 border-black">
+        <CardHeader className="p-3 sm:p-4 md:p-6">
+          <CardTitle className="text-sm sm:text-base font-semibold md:text-lg lg:text-xl">
             Your Study Contributions
           </CardTitle>
         </CardHeader>
         <CardContent className="p-0">
-          <div className="w-full">
-            <div className="min-w-full p-4" style={{width: '1200px'}}>
+          <div className="w-full overflow-x-auto">
+            <div className="min-w-[280px] p-1 sm:p-2 md:min-w-full md:p-4">
               <ContributionCalendar
                 data={studyData}
                 dateOptions={{
                   start: new Date(Date.now() - 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
                   end: new Date().toISOString().split('T')[0],
-                  daysOfTheWeek: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
+                  daysOfTheWeek: isMobile ? ['S', 'M', 'T', 'W', 'T', 'F', 'S'] : isTablet ? ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'] : ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'],
                   startsOnSunday: true,
                   includeBoundary: true,
                 }}
                 styleOptions={{
                   theme: customTheme,
-                  cx: 18,
-                  cy: 20,
-                  cr: 5,
+                  cx: isMobile ? 8 : isTablet ? 12 : 18,
+                  cy: isMobile ? 10 : isTablet ? 14 : 20,
+                  cr: isMobile ? 2.5 : isTablet ? 3.5 : 4,
                   textColor: '#1F2328'
                 }}
                 visibilityOptions={{
-                  hideDescription: false,
-                  hideMonthLabels: false,
-                  hideDayLabels: false,
+                  hideDescription: isMobile || isTablet,
+                  hideMonthLabels: isMobile,
+                  hideDayLabels: isMobile,
                 }}
                 onCellClick={(e) => {
                   const cellData = JSON.parse(e.currentTarget.getAttribute('data-cell') || '{}');
@@ -178,31 +195,31 @@ export default function DashboardHome() {
         </CardContent>
       </Card>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+      <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
         <Card className="bg-white border-2 border-black">
-          <CardHeader>
-            <CardTitle className="text-lg">Current Streak</CardTitle>
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Current Streak</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.currentStreak} days</p>
+          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.currentStreak} days</p>
           </CardContent>
         </Card>
 
         <Card className="bg-white border-2 border-black">
-          <CardHeader>
-            <CardTitle className="text-lg">Total Study Days</CardTitle>
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Total Study Days</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.totalDays} days</p>
+          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.totalDays} days</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-black">
-          <CardHeader>
-            <CardTitle className="text-lg">Best Streak</CardTitle>
+        <Card className="bg-white border-2 border-black sm:col-span-2 lg:col-span-1">
+          <CardHeader className="p-3 sm:p-4 md:p-6">
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Best Streak</CardTitle>
           </CardHeader>
-          <CardContent>
-            <p className="text-3xl font-bold">{stats.bestStreak} days</p>
+          <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.bestStreak} days</p>
           </CardContent>
         </Card>
       </div>

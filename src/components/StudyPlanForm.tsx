@@ -1,11 +1,13 @@
+"use client"
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import StudyPlanDisplay from './StudyPlanDisplay';
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 import type { StudyPlan } from "@/components/study-plan/StoredPlan";
+import { apiClient } from '@/lib/api-client';
+import { useSession } from 'next-auth/react';
 
 interface StudyPlanFormProps {
   onPlanGenerated: (plan: Partial<StudyPlan>) => void;
@@ -17,29 +19,52 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { data: session } = useSession();
 
   const handleGeneratePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/generate-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, examDate }),
+    
+    if (!session?.user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Error", 
+        description: "You must be logged in to generate a study plan",
       });
-      const data = await response.json();
-      if (response.ok) {
-        setPlan(data.plan); 
-        onPlanGenerated(data.plan);
+      return;
+    }
+
+    if (!subject.trim() || !examDate) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all fields",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      const response = await apiClient.createStudyPlan(
+        session.user.id,
+        subject,
+        examDate
+      );
+
+      if (response.success && response.plan) {
+        onPlanGenerated(response.plan);
+        setPlan(response.plan);
+        setSubject('');
+        setExamDate('');
         toast({
-          title: "Study Plan Generated",
-          description: "Your study plan is ready!",
-          action: <ToastAction altText="View plan">View plan</ToastAction>,
+          title: "Success",
+          description: "Study plan generated successfully",
         });
       } else {
-        throw new Error(data.error || 'Failed to generate study plan');
+        throw new Error(response.error || 'Failed to generate plan');
       }
     } catch (error) {
+      console.error('Error generating plan:', error);
       toast({
         variant: "destructive",
         title: "Error",
@@ -51,38 +76,40 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-6xl mx-auto">
-        <form onSubmit={handleGeneratePlan} className="space-y-4 mb-8">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <form onSubmit={handleGeneratePlan} className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
             <Input
               type="text"
               placeholder="Enter your study topic..."
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
-              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
+              disabled={isLoading}
             />
             <Input
               type="date"
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
-              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-lg p-6 rounded-xl"
+              className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
+              disabled={isLoading}
             />
           </div>
           <div className="flex justify-center w-full">
             <Button 
               type="submit" 
-              className="flex justify-center items-center bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
+              className="w-full sm:w-auto flex justify-center items-center bg-[#c1ff72] text-gray-800 text-base sm:text-lg py-6 px-8 rounded-xl" 
               disabled={isLoading}
             >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
+              {isLoading ? <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" /> : null}
               {isLoading ? 'Generating Your Plan...' : 'Create Study Plan'}
             </Button>
           </div>
         </form>
 
         {plan && (
-          <div className="mt-8">
+          <div className="mt-6 sm:mt-8">
             <StudyPlanDisplay plan={plan} />
           </div>
         )}
