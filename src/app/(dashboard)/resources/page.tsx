@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import ResourceCurator from '@/components/ResourceCurator';
 import { StoredResources } from "@/components/resources/StoredResources";
 import { Separator } from "@/components/ui/separator";
@@ -14,11 +14,7 @@ export default function ResourcesPage() {
   const [storedResources, setStoredResources] = useState<CuratedResource[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchResources();
-  }, [session]);
-
-  const fetchResources = async () => {
+  const fetchResources = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
       const data = await apiClient.getCuratedResources(session.user.id);
@@ -51,7 +47,11 @@ export default function ResourcesPage() {
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    fetchResources();
+  }, [fetchResources]);
 
   const handleResourceDelete = (resourceId: string) => {
     setStoredResources(resources => resources.filter(resource => resource._id !== resourceId));
@@ -60,8 +60,9 @@ export default function ResourcesPage() {
   const handleCreateResources = async (subject: string) => {
     if (!session?.user?.id) return;
     try {
-      const data = await apiClient.createCuratedResources(session.user.id, subject);
-      // Handle the response
+      await apiClient.createCuratedResources(session.user.id, subject);
+      // Refresh resources after creation
+      fetchResources();
     } catch (error) {
       console.error('Error creating resources:', error);
     }
