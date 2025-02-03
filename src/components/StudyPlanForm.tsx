@@ -1,3 +1,4 @@
+"use client"
 import { useState } from 'react';
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,6 +7,8 @@ import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import type { StudyPlan } from "@/components/study-plan/StoredPlan";
+import { apiClient } from '@/lib/api-client';
+import { useSession } from 'next-auth/react';
 
 interface StudyPlanFormProps {
   onPlanGenerated: (plan: Partial<StudyPlan>) => void;
@@ -17,28 +20,48 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   const [plan, setPlan] = useState<StudyPlan | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
+  const { data: session } = useSession();
 
   const handleGeneratePlan = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
-    try {
-      const response = await fetch("/api/generate-plan", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject, examDate }),
+    
+    if (!session?.user?.id) {
+      toast({
+        variant: "destructive",
+        title: "Error", 
+        description: "You must be logged in to generate a study plan",
       });
-      const data = await response.json();
-      if (response.ok) {
-        setPlan(data.plan); 
-        onPlanGenerated(data.plan);
-        toast({
-          title: "Study Plan Generated",
-          description: "Your study plan is ready!",
-          action: <ToastAction altText="View plan">View plan</ToastAction>,
-        });
-      } else {
-        throw new Error(data.error || 'Failed to generate study plan');
-      }
+      return;
+    }
+
+    if (!subject.trim() || !examDate) {
+      toast({
+        variant: "destructive",
+        title: "Error",
+        description: "Please fill in all fields",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+
+    try {
+      // Making API call to generate study plan
+      const { plan } = await apiClient.createStudyPlan(
+        session.user.id,
+        subject,
+        examDate
+      );
+
+      setPlan(plan);
+      onPlanGenerated(plan);
+      
+      toast({
+        title: "Study Plan Generated",
+        description: "Your study plan is ready!",
+        action: <ToastAction altText="View plan">View plan</ToastAction>,
+      });
+
     } catch (error) {
       toast({
         variant: "destructive",
@@ -61,12 +84,14 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
               value={subject}
               onChange={(e) => setSubject(e.target.value)}
               className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+              disabled={isLoading}
             />
             <Input
               type="date"
               value={examDate}
               onChange={(e) => setExamDate(e.target.value)}
               className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 text-lg p-6 rounded-xl"
+              disabled={isLoading}
             />
           </div>
           <div className="flex justify-center w-full">
