@@ -1,8 +1,8 @@
-import {NextResponse } from "next/server";
+import {  NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
-import { connectMongoDB } from "@/lib/mongodb";
 import { authOptions } from "@/lib/auth";
-import StudyPlan from "@/models/studyPlan";
+
+const EXPRESS_BACKEND_URL = process.env.EXPRESS_BACKEND_URL || 'http://localhost:5000';
 
 export async function GET() {
   try {
@@ -11,18 +11,24 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    await connectMongoDB();
+    const response = await fetch(`${EXPRESS_BACKEND_URL}/api/generate-plan/${session.user.id}`, {
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    const plans = await StudyPlan.find({
-      userId: session.user.id,
-      isActive: true,
-    }).sort({ createdAt: -1 });
+    if (!response.ok) {
+      const error = await response.text();
+      console.error('Express backend error:', error);
+      throw new Error('Failed to fetch study plans');
+    }
 
-    return NextResponse.json({ plans });
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
-    console.error("Error fetching study plans:", error);
+    console.error("Error in study-plan route:", error);
     return NextResponse.json(
-      { error: "Failed to fetch study plans" },
+      { error: "Failed to fetch study plans", details: (error as Error).message },
       { status: 500 }
     );
   }
