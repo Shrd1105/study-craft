@@ -32,6 +32,7 @@ export default function NotesPage() {
   const [loading, setLoading] = useState(true);
   const [selectedNote, setSelectedNote] = useState<Note | null>(null);
   const [isCreating, setIsCreating] = useState(false);
+  const [showSidebar, setShowSidebar] = useState(false);
 
   const fetchNotes = useCallback(async () => {
     try {
@@ -63,6 +64,7 @@ export default function NotesPage() {
   const createNewNote = async () => {
     setIsCreating(true);
     setSelectedNote(null);
+    setShowSidebar(false);
   };
 
   if (loading) {
@@ -70,27 +72,39 @@ export default function NotesPage() {
   }
 
   return (
-    <div className="container mx-auto p-6">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-3xl font-bold">Notes</h1>
-        <Button onClick={createNewNote}>
-          <Plus className="mr-2 h-4 w-4" />
-          New Note
-        </Button>
+    <div className="container mx-auto p-4 sm:p-6">
+      <div className="flex justify-between items-center mb-4 sm:mb-6">
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold">Notes</h1>
+        <div className="flex gap-2">
+          <Button 
+            className="md:hidden"
+            onClick={() => setShowSidebar(!showSidebar)}
+            variant="outline"
+          >
+            {showSidebar ? 'Hide Notes' : 'Show Notes'}
+          </Button>
+          <Button onClick={createNewNote}>
+            <Plus className="mr-2 h-4 w-4" />
+            <span className="hidden sm:inline">New Note</span>
+          </Button>
+        </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-12 gap-4 sm:gap-6">
         {/* Notes List Sidebar */}
-        <div className="col-span-3">
-          <Card className="h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
-            <CardHeader>
-              <CardTitle>Your Notes</CardTitle>
+        <div className={`${showSidebar ? 'block' : 'hidden'} md:block md:col-span-3`}>
+          <Card className="h-[calc(100vh-16rem)] md:h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
+            <CardHeader className="p-3 sm:p-4">
+              <CardTitle className="text-lg sm:text-xl">Your Notes</CardTitle>
             </CardHeader>
-            <CardContent>
+            <CardContent className="p-2 sm:p-4">
               <NotesList
                 notes={notes}
                 selectedNote={selectedNote}
-                onSelectNote={(note: Note) => setSelectedNote(note)}
+                onSelectNote={(note: Note) => {
+                  setSelectedNote(note);
+                  setShowSidebar(false);
+                }}
                 onRefresh={fetchNotes}
               />
             </CardContent>
@@ -98,9 +112,9 @@ export default function NotesPage() {
         </div>
 
         {/* Editor Area */}
-        <div className="col-span-9">
-          <Card className="h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
-            <CardContent className="p-6">
+        <div className={`${showSidebar ? 'hidden' : 'block'} md:block md:col-span-9`}>
+          <Card className="h-[calc(100vh-16rem)] md:h-[calc(100vh-12rem)] overflow-y-auto border-2 border-black rounded-lg">
+            <CardContent className="p-4 sm:p-6">
               {isCreating || selectedNote ? (
                 <NoteEditor
                   note={selectedNote}
@@ -115,8 +129,8 @@ export default function NotesPage() {
                 />
               ) : (
                 <div className="flex flex-col items-center justify-center h-full text-gray-500">
-                  <File className="h-12 w-12 mb-4" />
-                  <p>Select a note or create a new one</p>
+                  <File className="h-8 w-8 sm:h-12 sm:w-12 mb-2 sm:mb-4" />
+                  <p className="text-sm sm:text-base text-center">Select a note or create a new one</p>
                 </div>
               )}
             </CardContent>

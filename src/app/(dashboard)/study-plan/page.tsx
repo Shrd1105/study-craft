@@ -74,32 +74,33 @@ export default function StudyPlanPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Study Plan Generator</h1>
+    <div className="p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-2 sm:mb-0">Study Plan Generator</h1>
         <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">Create and manage your study plans</span>
+          <span className="text-xs sm:text-sm text-gray-600">Create and manage your study plans</span>
         </div>
       </div>
-      <div className="max-w-10xl">
+      
+      <div className="w-full max-w-full sm:max-w-10xl">
         <StudyPlanForm onPlanGenerated={handlePlanGenerated} />
       </div>
 
       {/* Stored Plans Section */}
       {loading ? (
-        <div className="mt-12">
-          <Separator className="my-8" />
-          <Skeleton className="h-8 w-48 mb-6" />
-          <div className="space-y-6">
-            <Skeleton className="h-[200px] w-full" />
-            <Skeleton className="h-[200px] w-full" />
+        <div className="mt-8 sm:mt-12">
+          <Separator className="my-6 sm:my-8" />
+          <Skeleton className="h-6 sm:h-8 w-36 sm:w-48 mb-4 sm:mb-6" />
+          <div className="space-y-4 sm:space-y-6">
+            <Skeleton className="h-[150px] sm:h-[200px] w-full" />
+            <Skeleton className="h-[150px] sm:h-[200px] w-full" />
           </div>
         </div>
       ) : storedPlans.length > 0 && (
-        <div className="mt-12">
-          <Separator className="my-8" />
-          <h2 className="text-2xl font-bold mb-6">Your Study Plans</h2>
-          <div className="space-y-6">
+        <div className="mt-8 sm:mt-12">
+          <Separator className="my-6 sm:my-8" />
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Study Plans</h2>
+          <div className="space-y-4 sm:space-y-6">
             {storedPlans.map((plan) => (
               <StoredPlan
                 key={plan._id}

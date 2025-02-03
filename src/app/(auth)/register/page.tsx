@@ -17,16 +17,18 @@ export default function RegisterPage() {
   }, [session, router])
 
   return (
-    <div className="container mx-auto max-w-md mt-20">
-      <div className="bg-white p-8 rounded-xl border-2 border-black">
-        <h1 className="text-2xl font-bold text-center mb-6">Create your account</h1>
-        <SignUpForm />
-        <p className="mt-4 text-center text-sm text-gray-600">
-          Already have an account?{' '}
-          <Link href="/signin" className="text-[#7fb236] hover:underline">
-            Sign in
-          </Link>
-        </p>
+    <div className="flex flex-col items-center justify-center min-h-screen py-6 sm:py-12 bg-[#FFFAEC] px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <div className="bg-white px-4 sm:px-10 py-6 sm:py-8 shadow rounded-lg sm:rounded-lg border-2 border-black">
+          <h1 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">Create your account</h1>
+          <SignUpForm />
+          <p className="mt-4 text-center text-xs sm:text-sm text-gray-600">
+            Already have an account?{' '}
+            <Link href="/signin" className="text-[#7fb236] hover:underline">
+              Sign in
+            </Link>
+          </p>
+        </div>
       </div>
     </div>
   )

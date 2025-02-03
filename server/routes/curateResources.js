@@ -71,21 +71,18 @@ router.post('/', async (req, res) => {
 router.delete('/:resourceId', async (req, res) => {
   try {
     const { resourceId } = req.params;
-    const { userId } = req.body;
-
-    if (!userId) {
+    
+    if (!resourceId) {
       return res.status(400).json({
         success: false,
-        error: 'userId is required'
+        error: 'resourceId is required'
       });
     }
 
-    const resource = await CuratedResource.findOneAndDelete({
-      _id: resourceId,
-      userId: userId,
-    });
-
-    if (!resource) {
+    // Find and delete the resource
+    const deletedResource = await CuratedResource.findByIdAndDelete(resourceId);
+    
+    if (!deletedResource) {
       return res.status(404).json({
         success: false,
         error: 'Resource not found'
@@ -96,6 +93,7 @@ router.delete('/:resourceId', async (req, res) => {
       success: true,
       message: 'Resource deleted successfully'
     });
+
   } catch (error) {
     console.error('Error deleting resource:', error);
     res.status(500).json({

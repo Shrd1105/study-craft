@@ -16,18 +16,18 @@ export default function SignInPage() {
   }, [session, router])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12 bg-[#FFFAEC]">
-      <div className="sm:mx-auto sm:w-full sm:max-w-md">
-        <h2 className="mt-6 text-center text-3xl font-bold tracking-tight text-gray-900">
+    <div className="flex flex-col items-center justify-center min-h-screen py-6 sm:py-12 bg-[#FFFAEC] px-4 sm:px-6 lg:px-8">
+      <div className="w-full max-w-md">
+        <h2 className="mt-4 sm:mt-6 text-center text-2xl sm:text-3xl font-bold tracking-tight text-gray-900">
           Welcome to Mind Mentor
         </h2>
-        <p className="mt-2 text-center text-sm text-gray-600">
+        <p className="mt-2 text-center text-xs sm:text-sm text-gray-600">
           Let&apos;s get started with your study journey
         </p>
       </div>
 
-      <div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
-        <div className="bg-white px-4 py-8 shadow sm:rounded-lg sm:px-10 border-2 border-black ">
+      <div className="mt-6 sm:mt-8 w-full max-w-md">
+        <div className="bg-white px-4 sm:px-10 py-6 sm:py-8 shadow rounded-lg sm:rounded-lg border-2 border-black">
           <SignInForm />
         </div>
       </div>

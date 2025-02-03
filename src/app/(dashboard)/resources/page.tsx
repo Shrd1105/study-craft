@@ -69,32 +69,32 @@ export default function ResourcesPage() {
   };
 
   return (
-    <div className="p-8">
-      <div className="flex items-center justify-between mb-8">
-        <h1 className="text-3xl font-bold text-gray-800">Resource Curator</h1>
-        <div className="flex items-center gap-4">
-          <span className="text-sm text-gray-600">Find and manage learning resources</span>
+    <div className="p-4 sm:p-6 md:p-8">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 sm:gap-0 mb-6 sm:mb-8">
+        <h1 className="text-2xl sm:text-3xl font-bold text-gray-800">Resource Curator</h1>
+        <div className="flex items-center">
+          <span className="text-xs sm:text-sm text-gray-600">Find and manage learning resources</span>
         </div>
       </div>
-      <div className="max-w-10xl">
+      <div className="w-full max-w-10xl mx-auto">
         <ResourceCurator onCreateResources={handleCreateResources} />
       </div>
 
       {/* Stored Resources Section */}
       {loading ? (
-        <div className="mt-12">
-          <Separator className="my-8" />
-          <Skeleton className="h-8 w-48 mb-6" />
-          <div className="space-y-6">
-            <Skeleton className="h-[200px] w-full" />
-            <Skeleton className="h-[200px] w-full" />
+        <div className="mt-8 sm:mt-12">
+          <Separator className="my-6 sm:my-8" />
+          <Skeleton className="h-6 sm:h-8 w-36 sm:w-48 mb-4 sm:mb-6" />
+          <div className="space-y-4 sm:space-y-6">
+            <Skeleton className="h-[150px] sm:h-[200px] w-full" />
+            <Skeleton className="h-[150px] sm:h-[200px] w-full" />
           </div>
         </div>
       ) : storedResources.length > 0 && (
-        <div className="mt-12">
-          <Separator className="my-8" />
-          <h2 className="text-2xl font-bold mb-6">Your Curated Resources</h2>
-          <div className="space-y-6">
+        <div className="mt-8 sm:mt-12">
+          <Separator className="my-6 sm:my-8" />
+          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Curated Resources</h2>
+          <div className="space-y-4 sm:space-y-6">
             {storedResources.map((resource) => (
               <StoredResources
                 key={resource._id}
