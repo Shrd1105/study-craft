@@ -1,51 +1,76 @@
 "use client"
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import StudyPlanForm from '@/components/StudyPlanForm';
 import { StoredPlan } from "@/components/study-plan/StoredPlan";
 import { Separator } from "@/components/ui/separator";
 import type { StudyPlan } from "@/components/study-plan/StoredPlan";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSession } from "next-auth/react";
+import { apiClient } from "@/lib/api-client";
 
 export default function StudyPlanPage() {
+  const { data: session } = useSession();
   const [storedPlans, setStoredPlans] = useState<StudyPlan[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchStoredPlans();
-  }, []);
-
-  const fetchStoredPlans = async () => {
+  const fetchPlans = useCallback(async () => {
+    if (!session?.user?.id) return;
     try {
-      const response = await fetch("/api/study-plan");
-      if (!response.ok) throw new Error("Failed to fetch plans");
-      const data = await response.json();
-      setStoredPlans(data.plans);
+      const data = await apiClient.getStudyPlan(session.user.id);
+      if (data.error) {
+        console.error("API returned error:", data.error);
+        setStoredPlans([]);
+        return;
+      }
+      
+      if (data.plans && Array.isArray(data.plans)) {
+        // Validate the structure of each plan
+        const validPlans = data.plans.filter((plan: StudyPlan) => {
+          return plan && 
+                 plan._id && 
+                 plan.overview &&
+                 Array.isArray(plan.weeklyPlans);
+        });
+        
+        console.log("Valid plans:", validPlans);
+        setStoredPlans(validPlans);
+      } else {
+        console.error("Invalid plans data structure:", data);
+        setStoredPlans([]);
+      }
     } catch (error) {
       console.error("Error fetching stored plans:", error);
+      setStoredPlans([]);
     } finally {
       setLoading(false);
     }
-  };
+  }, [session?.user?.id]);
+
+  useEffect(() => {
+    fetchPlans();
+  }, [fetchPlans]);
 
   const handlePlanDelete = (planId: string) => {
     setStoredPlans(plans => plans.filter(plan => plan._id !== planId));
   };
 
-  const handlePlanGenerated = (newPlan: Partial<StudyPlan>) => {
-    if (!newPlan.overview) return;
+  const handlePlanGenerated = async (newPlan: Partial<StudyPlan>) => {
+    if (!session?.user?.id || !newPlan.overview) return;
     
-    // Create a complete StudyPlan object
-    const completePlan: StudyPlan = {
-      _id: Date.now().toString(), // Temporary ID until server assigns one
-      overview: newPlan.overview,
-      weeklyPlans: newPlan.weeklyPlans || [],
-      recommendations: newPlan.recommendations || [],
-      isActive: true,
-      progress: 0
-    };
-    
-    setStoredPlans(plans => [completePlan, ...plans]);
+    try {
+      // Create the plan using the API
+      await apiClient.createStudyPlan(
+        session.user.id,
+        typeof newPlan.overview === 'string' ? newPlan.overview : newPlan.overview.subject,
+        new Date().toISOString()
+      );
+      
+      // Refresh the plans list
+      fetchPlans();
+    } catch (error) {
+      console.error("Error creating plan:", error);
+    }
   };
 
   return (

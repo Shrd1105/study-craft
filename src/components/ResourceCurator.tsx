@@ -6,7 +6,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { ToastAction } from "@/components/ui/toast";
 
 interface Resource {
   title: string;
@@ -20,35 +19,23 @@ interface ResourceCuratorProps {
 }
 
 export default function ResourceCurator({ onCreateResources }: ResourceCuratorProps) {
-  const [subject, setSubject] = useState('');
-  const [resources, setResources] = useState<Resource[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [subject, setSubject] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resources] = useState<Resource[]>([]);
   const [error, setError] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const handleCurateResources = async (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsLoading(true);
+    if (!subject.trim()) return;
+
+    setLoading(true);
     setError(null);
     try {
-      const response = await fetch("/api/curate-resources", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ subject }),
-      });
-      const data = await response.json();
-      if (response.ok) {
-        setResources(data.resources);
-        toast({
-          title: "Resources Found",
-          description: `Found ${data.resources.length} resources for ${subject}`,
-          action: <ToastAction altText="View resources">View resources</ToastAction>,
-        });
-      } else {
-        throw new Error(data.error || 'Failed to fetch resources');
-      }
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'An unexpected error occurred';
+      await onCreateResources(subject);
+      setSubject(""); // Clear input after successful submission
+    } catch (error) {
+      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
       toast({
         variant: "destructive",
@@ -56,29 +43,32 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
         description: errorMessage,
       });
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   };
 
   return (
     <div className="w-full bg-[#FFFAEC] p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-3xl mx-auto">
-        <form onSubmit={handleCurateResources} className="space-y-4 mb-8">
-          <Input
-            type="text"
-            placeholder="Enter a topic to find learning resources..."
-            value={subject}
-            onChange={(e) => setSubject(e.target.value)}
-            className="bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
-          />
-          <div className="flex justify-center w-full">
-            <Button 
-              type="submit" 
-              className="bg-[#c1ff72] text-gray-800 text-lg rounded-xl" 
-              disabled={isLoading}
-            >
-              {isLoading ? <Loader2 className="mr-2 h-5 w-5 animate-spin" /> : null}
-              {isLoading ? 'Curating Resources...' : 'Find Learning Resources'}
+        <form onSubmit={handleSubmit} className="space-y-4 mb-8">
+          <div className="flex gap-4">
+            <Input
+              type="text"
+              placeholder="Enter a topic to find learning resources..."
+              value={subject}
+              onChange={(e) => setSubject(e.target.value)}
+              className="flex-1 bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-lg p-6 rounded-xl"
+              disabled={loading}
+            />
+            <Button type="submit" disabled={loading || !subject.trim()}>
+              {loading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Generating...
+                </>
+              ) : (
+                "Generate Resources"
+              )}
             </Button>
           </div>
         </form>
