@@ -74,6 +74,7 @@ export function SignUpForm() {
 
       if (res.ok) {
         toast({
+          variant: "success",
           title: "Success",
           description: "Account created successfully",
         });
@@ -95,7 +96,7 @@ export function SignUpForm() {
       }
     } catch (error) {
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: error instanceof Error ? error.message : "Something went wrong",
       });
@@ -150,4 +151,4 @@ export function SignUpForm() {
       </Button>
     </form>
   );
-} 
+}

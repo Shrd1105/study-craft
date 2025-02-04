@@ -37,12 +37,13 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
       await apiClient.deleteCuratedResources(resource._id);
       onDelete(resource._id);
       toast({
+        variant: "success",
         title: "Success",
         description: "Resources deleted successfully",
       });
     } catch {
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: "Failed to delete resources",
       });

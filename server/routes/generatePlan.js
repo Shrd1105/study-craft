@@ -1,5 +1,5 @@
 const express = require('express');
-const { generatePlanWithGemini } = require('../services/aiService');
+const { generatePlan } = require('../services/aiService');
 const StudyPlan = require('../models/studyPlan');
 
 const router = express.Router();
@@ -61,7 +61,7 @@ router.post('/', async (req, res) => {
     }
 
     // Generate and save plan
-    const plan = await generatePlanWithGemini(subject, userId, examDate);
+    const plan = await generatePlan(subject, userId, examDate);
     const savedPlan = await plan.save();
 
     res.json({ 

@@ -2,11 +2,9 @@
 
 ## Table of Contents
 - [Overview](#overview)
-- [Features](#features)
+- [Features](#key-features)
 - [Tech Stack](#tech-stack)
-- [Architecture](#architecture)
 - [Installation](#installation)
-- [Environment Setup](#environment-setup)
 - [API Integration](#api-integration)
 - [Usage Guide](#usage-guide)
 - [Contributing](#contributing)
@@ -16,73 +14,67 @@
 
 Mind Mentor is an intelligent study companion that leverages AI to transform the learning experience. It combines personalized study planning, resource curation, and interactive assistance to help students achieve their academic goals efficiently.
 
-## Features
+## Key Features
 
-### 1. Personalized Study Plans 📚
-- Dynamic plan generation based on subject and exam date
-- Weekly and daily task breakdown
-- Progress tracking and adjustable schedules
-- Smart recommendations based on learning patterns
-- Visual calendar integration for session tracking
+### 1. AI-Powered Study Planning 📚
+- **Dynamic Plan Generation**
+  - Subject-based customization
+  - Exam date optimization
+  - Weekly learning milestones
+  - Daily task breakdown
+- **Progress Tracking**
+  - Visual progress indicators
+  - Completion status
+  - Adjustable schedules
+  - Performance analytics
 
-### 2. AI-Powered Resource Curation 🔍
-- Intelligent filtering of educational resources
-- Support for multiple content types:
-  - Online courses
+### 2. Smart Resource Curation 🔍
+- **AI-Driven Content Discovery**
+  - Tavily API integration for relevant search
+  - Quality scoring algorithm
+  - Content type diversity
+- **Resource Types Support**
   - Video tutorials
+  - Online courses
   - Documentation
-  - Interactive exercises
+  - Practice exercises
   - Academic papers
-- Quality scoring and relevance ranking
+- **Smart Filtering**
+  - Difficulty level categorization
+  - Format-based organization
+  - Topic relevance ranking
 
-### 3. Productivity Tools ⚡
-- **Pomodoro Timer**
-- **Smart Notes System**
-
-### 4. User Experience 🎯
-- Clean, intuitive interface
-- Responsive design
-- Progress visualization
-- Resource bookmarking
-- Cross-device synchronization
+### 3. User Experience 🎯
+- **Modern Interface**
+  - Clean, responsive design
+  - Toast notifications
+  - Loading states
+- **Navigation Features**
+  - Pagination system
 
 ## Tech Stack
 
 ### Frontend
-- **Framework**: Next.js 14 (App Router)
+- **Framework**: Next.js 14 with App Router
 - **Language**: TypeScript
 - **Styling**: 
-  - Tailwind CSS
-  - Shadcn UI
-- **State Management**: Zustand
-- **Authentication**: NextAuth.js
+  - Tailwind CSS for utility-first styling
+  - Shadcn UI for component library
+- **State Management**: 
+  - Zustand for global state
+  - React Query for server state
+- **Authentication**: NextAuth.js with JWT
 
 ### Backend
-- **API Routes**: Next.js API Routes
-- **Database**: MongoDB with Mongoose
+- **Runtime**: Node.js with Express
+- **Database**: MongoDB with Mongoose ODM
 - **AI Services**:
-  - Google Generative AI (Gemini Pro)
+  - Groq API for study plan generation
   - Tavily API for resource curation
-- **Authentication**: JWT with NextAuth.js
-
-
-## Architecture
-
-```
-mind-mentor/
-├── src/
-│   ├── app/                 # Next.js 14 app directory
-│   │   ├── (auth)/         # Authentication routes
-│   │   ├── (dashboard)/    # Protected dashboard routes
-│   │   ├── (marketing)/    # Public marketing pages
-│   │   └── api/            # API routes
-│   ├── components/         # React components
-│   ├── lib/               # Utility functions and configs
-│   ├── models/            # MongoDB schemas
-│   └── types/             # TypeScript type definitions
-├── public/                # Static assets
-
-```
+- **Security**: 
+  - JWT authentication
+  - Rate limiting
+  - Input validation
 
 ## Installation
 
@@ -92,39 +84,58 @@ git clone https://github.com/KartikLabhshetwar/mind-mentor
 cd mind-mentor
 ```
 
-2. Install dependencies:
+2. Install dependencies for both frontend and backend:
 ```bash
+npm install
+
+cd server
 npm install
 ```
 
-3. Run the development server:
-```bash
-npm run dev
-```
+3. Set up environment variables:
 
-## Environment Setup
-
-Create a `.env.local` file with the following variables:
+Create `.env.local` file with the following variables:
 
 ```env
-# Authentication
+# Frontend Environment Variables
+NEXT_PUBLIC_API_URL=http://localhost:5000
 NEXTAUTH_URL=http://localhost:3000
-NEXTAUTH_SECRET=your-nextauth-secret
+NEXTAUTH_SECRET=your-secret-key
 
 # Database
 MONGODB_URI=your-mongodb-uri
 
 # AI Services
-GOOGLE_API_KEY=your-gemini-api-key
-TAVILY_API_KEY=your-tavily-api-key
-
-# Optional Services
 GROQ_API_KEY=your-groq-api-key
+TAVILY_API_KEY=your-tavily-api-key
+```
+
+Create `.env` file in server directory:
+
+```env
+PORT=5000
+MONGODB_URI=your-mongodb-uri
+GROQ_API_KEY=your-groq-api-key
+TAVILY_API_KEY=your-tavily-api-key
+JWT_SECRET=your-jwt-secret
+```
+
+4. Start the development servers:
+
+Frontend:
+```bash
+npm run dev
+```
+
+Backend:
+```bash
+cd server
+npm run dev
 ```
 
 ## API Integration
 
-### Google Generative AI (Gemini)
+### Groq API
 Used for:
 - Study plan generation
 - Resource description enhancement

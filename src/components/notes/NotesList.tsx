@@ -40,6 +40,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
       if (!response.ok) throw new Error('Failed to delete note');
 
       toast({
+        variant: "success",
         title: "Success",
         description: "Note deleted successfully",
       });
@@ -48,9 +49,9 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
     } catch (error) {
       console.error('Error deleting note:', error);
       toast({
+        variant: "error",
         title: "Error",
         description: "Failed to delete note",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -110,4 +111,4 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
       ))}
     </div>
   );
-} 
+}

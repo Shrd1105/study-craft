@@ -49,12 +49,13 @@ export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
       await apiClient.deleteStudyPlan(plan._id);
       onDelete(plan._id);
       toast({
+        variant: "success",
         title: "Success",
         description: "Study plan deleted successfully",
       });
     } catch {
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: "Failed to delete study plan",
       });

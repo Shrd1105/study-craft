@@ -1,5 +1,5 @@
 const express = require('express');
-const { searchTavily, curateResourcesWithGemini } = require('../services/aiService');
+const { searchTavily, curateResources } = require('../services/aiService');
 const { saveResources } = require('../services/dbService');
 const CuratedResource = require('../models/curatedResource');
 
@@ -45,13 +45,22 @@ router.post('/', async (req, res) => {
       });
     }
 
-    // Search for resources
+    // Check if resources already exist for this subject and user
+    const existingResources = await CuratedResource.find({ 
+      userId,
+      subject: subject.trim().toLowerCase()
+    });
+
+    if (existingResources.length > 0) {
+      return res.status(400).json({
+        success: false,
+        error: 'Resources already exist for this subject'
+      });
+    }
+
+    // If no existing resources, generate new ones
     const searchData = await searchTavily(subject);
-    
-    // Generate curated resources
-    const curatedResources = await curateResourcesWithGemini(searchData, subject);
-    
-    // Save resources
+    const curatedResources = await curateResources(searchData, subject);
     const savedResources = await saveResources(userId, subject, curatedResources);
     
     res.json({ 

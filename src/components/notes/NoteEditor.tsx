@@ -49,6 +49,7 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
       if (!response.ok) throw new Error('Failed to save note');
 
       toast({
+        variant: "success",
         title: "Success",
         description: "Note saved successfully",
       });
@@ -57,9 +58,9 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
     } catch (error) {
       console.error('Error saving note:', error);
       toast({
+        variant: "error",
         title: "Error",
         description: "Failed to save note",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);

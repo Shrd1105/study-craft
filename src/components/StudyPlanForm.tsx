@@ -26,8 +26,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
     
     if (!session?.user?.id) {
       toast({
-        variant: "destructive",
-        title: "Error", 
+        variant: "error",
+        title: "Authentication Required", 
         description: "You must be logged in to generate a study plan",
       });
       return;
@@ -35,8 +35,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
 
     if (!subject.trim() || !examDate) {
       toast({
-        variant: "destructive",
-        title: "Error",
+        variant: "error",
+        title: "Missing Information",
         description: "Please fill in all fields",
       });
       return;
@@ -57,7 +57,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
         setSubject('');
         setExamDate('');
         toast({
-          title: "Success",
+          variant: "success",
+          title: "Plan Generated",
           description: "Study plan generated successfully",
         });
       } else {
@@ -66,8 +67,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
     } catch (error) {
       console.error('Error generating plan:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
+        variant: "error",
+        title: "Generation Failed",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
     } finally {

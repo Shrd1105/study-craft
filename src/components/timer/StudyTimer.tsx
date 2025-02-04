@@ -42,6 +42,7 @@ export function StudyTimer() {
         const data = await response.json();
 
         toast({
+          variant: "success",
           title: "Focus Session Complete! 🎉",
           description: `Current streak: ${data.stats.currentStreak} days! Time for a break.`,
           duration: 5000,
@@ -56,14 +57,15 @@ export function StudyTimer() {
       } catch (error) {
         console.error('Error saving session:', error);
         toast({
+          variant: "error",
           title: "Error",
           description: "Failed to save your study session",
-          variant: "destructive",
           duration: 5000,
         });
       }
     } else {
       toast({
+        variant: "success",
         title: "Break Time Over",
         description: "Ready for another focus session?",
         duration: 5000,
@@ -207,4 +209,4 @@ export function StudyTimer() {
       </CardContent>
     </Card>
   );
-} 
+}

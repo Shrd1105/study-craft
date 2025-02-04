@@ -1,6 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const mongoose = require('mongoose');
+const { aiRateLimiter } = require('./services/aiService');
 require('dotenv').config();
 
 const curateResourcesRouter = require('./routes/curateResources');
@@ -19,6 +20,10 @@ app.use(cors({
 
 app.use(express.json());
 
+// Apply rate limiter to AI-related routes
+app.use('/api/resources', aiRateLimiter);
+app.use('/api/study-plan', aiRateLimiter);
+
 // Basic health check
 app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Mind Mentor API is running' });
@@ -34,7 +39,7 @@ app.use('/generate-plan', generatePlanRouter);
 app.use('/curate-resources', curateResourcesRouter);
 
 // Error handling middleware
-app.use((err, req, res, next) => {
+app.use((err, req, res) => {
   console.error('Error:', err);
   res.status(500).json({ 
     success: false, 
