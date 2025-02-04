@@ -44,7 +44,7 @@ export default function ProfilePage() {
 
   return (
     <div className="container max-w-4xl py-8">
-      <Card className="bg-white border-2 border-black">
+      <Card className="border-2 border-black bg-[#F2EDE0]">
         <CardHeader className="border-b-2 border-black">
           <CardTitle className="text-2xl font-bold flex items-center gap-4">
             <Avatar className="h-16 w-16">

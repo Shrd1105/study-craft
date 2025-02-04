@@ -1,72 +1,136 @@
 "use client"
 
 import { cn } from "@/lib/utils"
-import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
-import { BookOpen, Brain, FileText, Home, Timer } from "lucide-react"
+import { BookOpen, Brain, FileText, Home, Timer, Users } from "lucide-react"
+
+interface NavItem {
+  label: string;
+  icon:  React.ComponentType<React.SVGProps<SVGSVGElement>>;
+  href: string;
+  badge?: string;
+}
+
+interface NavSection {
+  title: string;
+  items: NavItem[];
+}
 
 export function DashboardNav({ className, ...props }: React.HTMLAttributes<HTMLDivElement>) {
   const pathname = usePathname()
 
-  const routes = [
+  const navSections: NavSection[] = [
     {
-      label: 'Home',
-      icon: Home,
-      href: '/home',
-      color: 'text-sky-500',
+      title: "General",
+      items: [
+        {
+          label: 'Home',
+          icon: Home,
+          href: '/home',
+        },
+        {
+          label: 'Profile',
+          icon: Users,
+          href: '/profile',
+        },
+      ]
     },
     {
-      label: 'Study Planner',
-      icon: BookOpen,
-      href: '/study-plan', 
-      color: 'text-violet-500',
-    },
-    {
-      label: 'Resources',
-      icon: Brain,
-      href: '/resources',
-      color: 'text-pink-700',
-    },
-    {
-      label: 'Timer',
-      icon: Timer,
-      color: 'text-orange-700',
-      href: '/timer',
-    },
-    {
-      label: 'Notes',
-      icon: FileText,
-      color: 'text-emerald-500',
-      href: '/notes',
-    },
+      title: "Study Tools", 
+      items: [
+        {
+          label: 'Planner',
+          icon: BookOpen,
+          href: '/study-plan',
+        },
+        {
+          label: 'Resources',
+          icon: Brain,
+          href: '/resources',
+        },
+        {
+          label: 'Timer',
+          icon: Timer,
+          href: '/timer',
+        },
+        {
+          label: 'Notes',
+          icon: FileText,
+          href: '/notes',
+        },
+      ]
+    }
   ]
 
   return (
-    <div className={cn("h-full py-2 sm:py-6", className)} {...props}>
-      <div className="space-y-2 sm:space-y-4 py-2 sm:py-4">
-        <div className="px-2 sm:px-3 py-1 sm:py-2">
-          <div className="flex flex-row sm:flex-col gap-1 sm:gap-2 overflow-x-auto sm:overflow-visible">
-            {routes.map((route) => (
-              <Button
-                key={route.href}
-                variant={pathname === route.href ? "default" : "ghost"}
+    <nav 
+      className={cn(
+        "h-full bg-background text-foreground overflow-y-auto",
+        className
+      )} 
+      {...props}
+    >
+      <div className="px-3 py-2">
+        {/* Desktop View */}
+        <div className="hidden md:block">
+          {navSections.map((section, idx) => (
+            <div key={section.title} className={cn("py-2", idx !== 0 && "mt-6")}>
+              <h3 className="px-4 text-xs font-medium text-muted-foreground mb-2">
+                {section.title}
+              </h3>
+              <div className="space-y-2">
+                {section.items.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "flex items-center gap-3 rounded-md px-4 py-2.5 text-sm font-medium transition-all duration-200 ease-in-out hover:bg-muted hover:text-foreground hover:shadow-md border-r-2 border-transparent hover:border-primary hover:translate-x-1",
+                      pathname === item.href 
+                        ? "text-foreground bg-muted border-r-2 border-primary" 
+                        : "text-muted-foreground"
+                    )}
+                  >
+                    <item.icon className="h-4 w-4 text-foreground" />
+                    <span>{item.label}</span>
+                    {item.badge && (
+                      <span className="ml-auto text-xs bg-primary text-primary-foreground px-1.5 py-0.5 rounded">
+                        {item.badge}
+                      </span>
+                    )}
+                  </Link>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Mobile View */}
+        <div className="md:hidden fixed bottom-0 left-0 right-0" style={{ backgroundColor: '#EFE9D5' }}>
+          <div className="flex justify-around items-center overflow-x-auto py-3 px-2">
+            {navSections.flatMap(section => section.items).map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
                 className={cn(
-                  "min-w-[5rem] sm:w-full justify-center sm:justify-start gap-2 px-2 sm:px-4 py-2 sm:py-3 text-xs sm:text-sm",
-                  pathname === route.href && "bg-[#c1ff72] hover:bg-[#b1ef62]"
+                  "flex flex-col items-center justify-center p-2 min-w-[70px] rounded-md transition-all duration-200 ease-in-out hover:bg-muted hover:text-foreground hover:shadow-sm border-b-2 border-transparent hover:border-primary",
+                  pathname === item.href 
+                    ? "text-foreground bg-muted border-b-2 border-primary" 
+                    : "text-muted-foreground"
                 )}
-                asChild
               >
-                <Link href={route.href}>
-                  <route.icon className={cn("h-4 w-4 sm:h-5 sm:w-5", route.color)} />
-                  <span className="hidden sm:inline">{route.label}</span>
-                  <span className="inline sm:hidden">{route.label.split(' ')[0]}</span>
-                </Link>
-              </Button>
+                <item.icon className="h-5 w-5 text-foreground" />
+                <span className="text-xs mt-1 font-medium">{item.label}</span>
+                {item.badge && (
+                  <span className="absolute top-0 right-0 text-xs bg-primary text-primary-foreground px-1 py-0.5 rounded-full">
+                    {item.badge}
+                  </span>
+                )}
+              </Link>
             ))}
           </div>
         </div>
       </div>
-    </div>
+    </nav>
   )
 }

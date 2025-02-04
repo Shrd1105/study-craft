@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 import { ContributionCalendar } from 'react-contribution-calendar';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useSession } from 'next-auth/react';
+import PacmanLoader from 'react-spinners/PacmanLoader';
 
 interface StudySession {
   duration: number;
@@ -46,13 +47,13 @@ interface SessionData {
   lastStudyDate: string;
 }
 
-// Custom theme for the calendar
+// Custom theme for the calendar using our color scheme
 const customTheme = {
-  level0: '#ffffff',
-  level1: '#A9C46C',
-  level2: '#809D3C',
-  level3: '#5D8736',
-  level4: '#5D8736',
+  level0: 'var(--color-cream-900)',
+  level1: 'var(--color-aqua-100)',
+  level2: 'var(--color-aqua-500)',
+  level3: 'var(--color-teal-800)',
+  level4: 'var(--color-navy-900)',
 };
 
 export default function DashboardHome() {
@@ -135,26 +136,26 @@ export default function DashboardHome() {
 
   if (loading) {
     return (
-      <div className="flex justify-center items-center min-h-[calc(100vh-3.5rem)]">
-        <div className="animate-pulse text-base sm:text-lg">Loading...</div>
+      <div className="fixed inset-0 flex items-center justify-center">
+        <PacmanLoader color="#538B81" />
       </div>
     );
   }
 
   return (
-    <div className="space-y-4 px-2 py-4 sm:p-4 md:space-y-8 md:p-6 lg:p-8">
+    <div className="space-y-4 px-2 py-4 sm:p-4 md:space-y-8 md:p-6 lg:p-8 bg-background">
       <div className="flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
-        <h1 className="text-lg sm:text-xl font-bold text-gray-800 md:text-2xl lg:text-3xl">
+        <h1 className="text-lg sm:text-xl font-bold text-foreground md:text-2xl lg:text-3xl">
           {session?.user?.name ? `${session.user.name}'s ` : ''}Study Activity
         </h1>
-        <span className="text-xs text-gray-600 sm:text-sm">
+        <span className="text-xs text-muted-foreground sm:text-sm">
           Last updated: {new Date().toLocaleDateString()}
         </span>
       </div>
 
-      <Card className="bg-white border-2 border-black">
+      <Card className="bg-card border-2 border-border">
         <CardHeader className="p-3 sm:p-4 md:p-6">
-          <CardTitle className="text-sm sm:text-base font-semibold md:text-lg lg:text-xl">
+          <CardTitle className="text-sm sm:text-base font-semibold md:text-lg lg:text-xl text-card-foreground">
             Your Study Contributions
           </CardTitle>
         </CardHeader>
@@ -175,7 +176,7 @@ export default function DashboardHome() {
                   cx: isMobile ? 8 : isTablet ? 12 : 18,
                   cy: isMobile ? 10 : isTablet ? 14 : 20,
                   cr: isMobile ? 2.5 : isTablet ? 3.5 : 4,
-                  textColor: '#1F2328'
+                  textColor: 'var(--foreground)'
                 }}
                 visibilityOptions={{
                   hideDescription: isMobile || isTablet,
@@ -196,30 +197,30 @@ export default function DashboardHome() {
       </Card>
 
       <div className="grid gap-3 sm:gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
-        <Card className="bg-white border-2 border-black">
+        <Card className="bg-card border-2 border-border">
           <CardHeader className="p-3 sm:p-4 md:p-6">
-            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Current Streak</CardTitle>
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg text-card-foreground">Current Streak</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
-            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.currentStreak} days</p>
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl text-card-foreground">{stats.currentStreak} days</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-black">
+        <Card className="bg-card border-2 border-border">
           <CardHeader className="p-3 sm:p-4 md:p-6">
-            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Total Study Days</CardTitle>
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg text-card-foreground">Total Study Days</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
-            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.totalDays} days</p>
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl text-card-foreground">{stats.totalDays} days</p>
           </CardContent>
         </Card>
 
-        <Card className="bg-white border-2 border-black sm:col-span-2 lg:col-span-1">
+        <Card className="bg-card border-2 border-border sm:col-span-2 lg:col-span-1">
           <CardHeader className="p-3 sm:p-4 md:p-6">
-            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg">Best Streak</CardTitle>
+            <CardTitle className="text-xs sm:text-sm md:text-base lg:text-lg text-card-foreground">Best Streak</CardTitle>
           </CardHeader>
           <CardContent className="p-3 pt-0 sm:p-4 sm:pt-0 md:p-6 md:pt-0">
-            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl">{stats.bestStreak} days</p>
+            <p className="text-lg sm:text-xl font-bold md:text-2xl lg:text-3xl text-card-foreground">{stats.bestStreak} days</p>
           </CardContent>
         </Card>
       </div>

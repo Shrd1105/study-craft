@@ -76,7 +76,7 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#F2EDE0] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-6xl mx-auto">
         <form onSubmit={handleGeneratePlan} className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
@@ -99,8 +99,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
           <div className="flex justify-center w-full">
             <Button 
               type="submit" 
-              className="w-full sm:w-auto flex justify-center items-center bg-[#c1ff72] text-gray-800 text-base sm:text-lg py-6 px-8 rounded-xl" 
-              disabled={isLoading}
+              className="w-full sm:w-auto flex justify-center items-center text-base sm:text-lg py-6 px-8 rounded-xl" 
+              disabled={isLoading || !subject.trim() || !examDate}
             >
               {isLoading ? <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" /> : null}
               {isLoading ? 'Generating Your Plan...' : 'Create Study Plan'}

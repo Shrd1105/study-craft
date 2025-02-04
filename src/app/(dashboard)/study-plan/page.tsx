@@ -96,19 +96,26 @@ export default function StudyPlanPage() {
             <Skeleton className="h-[150px] sm:h-[200px] w-full" />
           </div>
         </div>
-      ) : storedPlans.length > 0 && (
+      ) : (
         <div className="mt-8 sm:mt-12">
           <Separator className="my-6 sm:my-8" />
           <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Study Plans</h2>
-          <div className="space-y-4 sm:space-y-6">
-            {storedPlans.map((plan) => (
-              <StoredPlan
-                key={plan._id}
-                plan={plan}
-                onDelete={handlePlanDelete}
-              />
-            ))}
-          </div>
+          {storedPlans.length > 0 ? (
+            <div className="space-y-4 sm:space-y-6">
+              {storedPlans.map((plan) => (
+                <StoredPlan
+                  key={plan._id}
+                  plan={plan}
+                  onDelete={handlePlanDelete}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>You haven't created any study plans yet.</p>
+              <p className="mt-2">Use the form above to create your first study plan!</p>
+            </div>
+          )}
         </div>
       )}
     </div>

@@ -90,19 +90,26 @@ export default function ResourcesPage() {
             <Skeleton className="h-[150px] sm:h-[200px] w-full" />
           </div>
         </div>
-      ) : storedResources.length > 0 && (
+      ) : (
         <div className="mt-8 sm:mt-12">
           <Separator className="my-6 sm:my-8" />
           <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Curated Resources</h2>
-          <div className="space-y-4 sm:space-y-6">
-            {storedResources.map((resource) => (
-              <StoredResources
-                key={resource._id}
-                resource={resource}
-                onDelete={handleResourceDelete}
-              />
-            ))}
-          </div>
+          {storedResources.length > 0 ? (
+            <div className="space-y-4 sm:space-y-6">
+              {storedResources.map((resource) => (
+                <StoredResources
+                  key={resource._id}
+                  resource={resource}
+                  onDelete={handleResourceDelete}
+                />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-gray-500">
+              <p>You haven't curated any resources yet.</p>
+              <p className="mt-2">Use the form above to get personalized learning resources!</p>
+            </div>
+          )}
         </div>
       )}
     </div>

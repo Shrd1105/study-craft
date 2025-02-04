@@ -111,8 +111,8 @@ export function StudyTimer() {
           className={cn(
             "relative p-4 sm:p-8 rounded-lg cursor-pointer transition-colors",
             timer.mode === 'focus' 
-              ? "bg-green-50 hover:bg-green-100" 
-              : "bg-blue-50 hover:bg-blue-100"
+              ? "bg-[#EFE9D5] hover:bg-[#F5F1EA]" 
+              : "bg-[#EFE9D5] hover:bg-[#F5F1EA]"
           )}
           onClick={handleModeSwitch}
         >
@@ -120,7 +120,7 @@ export function StudyTimer() {
             <h2 className="text-xl sm:text-2xl font-bold mb-2">
               {timer.mode === 'focus' ? 'Focus Time' : 'Break Time'}
             </h2>
-            <div className="text-3xl sm:text-4xl font-mono">
+            <div className="text-5xl sm:text-6xl font-mono font-bold">
               {formatTime(timer.timeLeft)}
             </div>
           </div>

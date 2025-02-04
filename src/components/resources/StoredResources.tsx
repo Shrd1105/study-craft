@@ -69,7 +69,7 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={isDeleting} className="w-full sm:w-auto">
+            <Button variant="destructive" disabled={isDeleting} className="w-full sm:w-auto hover:bg-red-500">
               Delete Resources
             </Button>
           </AlertDialogTrigger>
@@ -82,7 +82,7 @@ export function StoredResources({ resource, onDelete }: StoredResourcesProps) {
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto">
+              <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto hover:bg-red-500">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

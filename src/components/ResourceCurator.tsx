@@ -52,7 +52,7 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#F2EDE0] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="w-full max-w-3xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
