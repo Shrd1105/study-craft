@@ -106,7 +106,7 @@ export default function ResourcesPage() {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <p>You haven't curated any resources yet.</p>
+              <p>You haven&apos;t curated any resources yet.</p>
               <p className="mt-2">Use the form above to get personalized learning resources!</p>
             </div>
           )}

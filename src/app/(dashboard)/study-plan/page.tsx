@@ -112,7 +112,7 @@ export default function StudyPlanPage() {
             </div>
           ) : (
             <div className="text-center py-8 text-gray-500">
-              <p>You haven't created any study plans yet.</p>
+              <p>You haven&apos;t created any study plans yet.</p>
               <p className="mt-2">Use the form above to create your first study plan!</p>
             </div>
           )}
