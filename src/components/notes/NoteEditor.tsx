@@ -49,6 +49,7 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
       if (!response.ok) throw new Error('Failed to save note');
 
       toast({
+        variant: "success",
         title: "Success",
         description: "Note saved successfully",
       });
@@ -57,9 +58,9 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
     } catch (error) {
       console.error('Error saving note:', error);
       toast({
+        variant: "error",
         title: "Error",
         description: "Failed to save note",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -79,7 +80,7 @@ export default function NoteEditor({ note, onSave, onCancel }: NoteEditorProps) 
         value={content}
         onChange={(e) => setContent(e.target.value)}
         placeholder="Start writing your note here..."
-        className="w-full h-[calc(100vh-20rem)] p-4 border rounded resize-none focus:outline-none focus:ring-2 focus:ring-black"
+        className="w-full h-[calc(100vh-20rem)] p-4 border bg-[#EFE9D5] rounded resize-none focus:outline-none"
       />
 
       <div className="flex justify-end gap-2">

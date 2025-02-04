@@ -49,12 +49,13 @@ export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
       await apiClient.deleteStudyPlan(plan._id);
       onDelete(plan._id);
       toast({
+        variant: "success",
         title: "Success",
         description: "Study plan deleted successfully",
       });
     } catch {
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: "Failed to delete study plan",
       });
@@ -80,7 +81,7 @@ export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
         </div>
         <AlertDialog>
           <AlertDialogTrigger asChild>
-            <Button variant="destructive" disabled={isDeleting} className="w-full sm:w-auto">
+            <Button variant="destructive" disabled={isDeleting} className="w-full sm:w-auto hover:bg-red-500">
               Delete Plan
             </Button>
           </AlertDialogTrigger>
@@ -93,7 +94,7 @@ export function StoredPlan({ plan, onDelete }: StoredPlanProps) {
             </AlertDialogHeader>
             <AlertDialogFooter className="flex-col sm:flex-row gap-2 sm:gap-0">
               <AlertDialogCancel className="w-full sm:w-auto">Cancel</AlertDialogCancel>
-              <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto">
+              <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto hover:bg-red-500">
                 Delete
               </AlertDialogAction>
             </AlertDialogFooter>

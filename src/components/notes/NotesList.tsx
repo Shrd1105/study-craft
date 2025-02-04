@@ -40,6 +40,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
       if (!response.ok) throw new Error('Failed to delete note');
 
       toast({
+        variant: "success",
         title: "Success",
         description: "Note deleted successfully",
       });
@@ -48,9 +49,9 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
     } catch (error) {
       console.error('Error deleting note:', error);
       toast({
+        variant: "error",
         title: "Error",
         description: "Failed to delete note",
-        variant: "destructive",
       });
     } finally {
       setIsDeleting(false);
@@ -71,8 +72,8 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
       {notes.map((note) => (
         <div
           key={note._id}
-          className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-gray-100 ${
-            selectedNote?._id === note._id ? 'bg-gray-100' : ''
+          className={`flex items-center justify-between p-3 rounded-lg cursor-pointer hover:bg-[#F5F1EA] ${
+            selectedNote?._id === note._id ? 'bg-[#F5F1EA]' : ''
           }`}
           onClick={() => onSelectNote(note)}
         >
@@ -94,7 +95,7 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end">
               <DropdownMenuItem
-                className="text-red-600"
+                className="text-red-600 hover:text-red-800"
                 onClick={(e) => {
                   e.stopPropagation();
                   handleDelete(note._id);
@@ -110,4 +111,4 @@ export default function NotesList({ notes, selectedNote, onSelectNote, onRefresh
       ))}
     </div>
   );
-} 
+}

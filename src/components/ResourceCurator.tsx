@@ -35,6 +35,7 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
       await onCreateResources(subject);
       setSubject(""); // Clear input after successful submission
       toast({
+        variant: "success",
         title: "Success",
         description: "Resources generated successfully",
       });
@@ -42,17 +43,18 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
       const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
       setError(errorMessage);
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: errorMessage,
       });
+      return; // Return early to prevent showing success state
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#F2EDE0] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="w-full max-w-3xl mx-auto">
         <form onSubmit={handleSubmit} className="space-y-4 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
@@ -81,7 +83,13 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
           </div>
         </form>
 
-        {resources.length > 0 && (
+        {error && (
+          <div className="text-red-500 mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border-2 border-red-200 text-sm sm:text-base">
+            {error}
+          </div>
+        )}
+
+        {!error && resources.length > 0 && (
           <ScrollArea className="h-[calc(100vh-400px)] sm:h-[calc(100vh-300px)] w-full">
             <div className="grid grid-cols-1 gap-6 sm:gap-10">
               {resources.map((resource, index) => (
@@ -105,12 +113,6 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
               ))}
             </div>
           </ScrollArea>
-        )}
-        
-        {error && (
-          <div className="text-red-500 mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border-2 border-red-200 text-sm sm:text-base">
-            {error}
-          </div>
         )}
       </div>
     </div>

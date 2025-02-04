@@ -26,8 +26,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
     
     if (!session?.user?.id) {
       toast({
-        variant: "destructive",
-        title: "Error", 
+        variant: "error",
+        title: "Authentication Required", 
         description: "You must be logged in to generate a study plan",
       });
       return;
@@ -35,8 +35,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
 
     if (!subject.trim() || !examDate) {
       toast({
-        variant: "destructive",
-        title: "Error",
+        variant: "error",
+        title: "Missing Information",
         description: "Please fill in all fields",
       });
       return;
@@ -57,7 +57,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
         setSubject('');
         setExamDate('');
         toast({
-          title: "Success",
+          variant: "success",
+          title: "Plan Generated",
           description: "Study plan generated successfully",
         });
       } else {
@@ -66,8 +67,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
     } catch (error) {
       console.error('Error generating plan:', error);
       toast({
-        variant: "destructive",
-        title: "Error",
+        variant: "error",
+        title: "Generation Failed",
         description: error instanceof Error ? error.message : "An unexpected error occurred",
       });
     } finally {
@@ -76,7 +77,7 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
   };
 
   return (
-    <div className="w-full bg-[#FFFAEC] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
+    <div className="w-full bg-[#F2EDE0] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
       <div className="max-w-6xl mx-auto">
         <form onSubmit={handleGeneratePlan} className="space-y-4 sm:space-y-6 mb-6 sm:mb-8">
           <div className="flex flex-col sm:grid sm:grid-cols-2 gap-3 sm:gap-4">
@@ -99,8 +100,8 @@ export default function StudyPlanForm({ onPlanGenerated }: StudyPlanFormProps) {
           <div className="flex justify-center w-full">
             <Button 
               type="submit" 
-              className="w-full sm:w-auto flex justify-center items-center bg-[#c1ff72] text-gray-800 text-base sm:text-lg py-6 px-8 rounded-xl" 
-              disabled={isLoading}
+              className="w-full sm:w-auto flex justify-center items-center text-base sm:text-lg py-6 px-8 rounded-xl" 
+              disabled={isLoading || !subject.trim() || !examDate}
             >
               {isLoading ? <Loader2 className="mr-2 h-4 sm:h-5 w-4 sm:w-5 animate-spin" /> : null}
               {isLoading ? 'Generating Your Plan...' : 'Create Study Plan'}

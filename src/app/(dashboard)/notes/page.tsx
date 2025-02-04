@@ -8,6 +8,7 @@ import { Plus, File } from 'lucide-react';
 import { useToast } from "@/hooks/use-toast";
 import NoteEditor from '@/components/notes/NoteEditor';
 import NotesList from '@/components/notes/NotesList';
+import PacmanLoader from 'react-spinners/PacmanLoader';
 
 interface Note {
   _id: string;
@@ -48,9 +49,9 @@ export default function NotesPage() {
     } catch (error) {
       console.error('Error fetching notes:', error);
       toast({
+        variant: "error",
         title: "Error",
         description: "Failed to load notes",
-        variant: "destructive",
       });
     } finally {
       setLoading(false);
@@ -68,7 +69,9 @@ export default function NotesPage() {
   };
 
   if (loading) {
-    return <div>Loading...</div>;
+    return <div className="fixed inset-0 flex items-center justify-center">
+      <PacmanLoader color="#538B81" />
+    </div>
   }
 
   return (
@@ -139,4 +142,4 @@ export default function NotesPage() {
       </div>
     </div>
   );
-} 
+}

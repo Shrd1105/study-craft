@@ -90,17 +90,16 @@ export async function DELETE(
     }
 
     await connectMongoDB();
-    const note = await Note.findOneAndUpdate(
-      { _id: params.noteId, userId: session.user.id },
-      { isArchived: true },
-      { new: true }
-    );
+    const note = await Note.findOneAndDelete({
+      _id: params.noteId,
+      userId: session.user.id
+    });
 
     if (!note) {
       return NextResponse.json({ error: "Note not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ message: "Note archived successfully" });
+    return NextResponse.json({ message: "Note deleted successfully" });
   } catch (error) {
     console.error("Error deleting note:", error);
     return NextResponse.json(

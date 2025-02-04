@@ -17,7 +17,7 @@ export default function RegisterPage() {
   }, [session, router])
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-6 sm:py-12 bg-[#FFFAEC] px-4 sm:px-6 lg:px-8">
+    <div className="flex flex-col items-center justify-center min-h-screen py-6 sm:py-12 bg-[#EFE9D5] px-4 sm:px-6 lg:px-8">
       <div className="w-full max-w-md">
         <div className="bg-white px-4 sm:px-10 py-6 sm:py-8 shadow rounded-lg sm:rounded-lg border-2 border-black">
           <h1 className="text-xl sm:text-2xl font-bold text-center mb-4 sm:mb-6">Create your account</h1>

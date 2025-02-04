@@ -32,7 +32,7 @@ export function Header() {
   }
 
   return (
-    <header className="fixed top-0 left-0 right-0 z-50 bg-[#FFFAEC] border-b-2 border-black h-14">
+    <header className="fixed top-0 left-0 right-0 z-50 bg-[#EFE9D5]/80 backdrop-blur-sm border-b-2 border-border h-14">
       <div className="container mx-auto px-4">
         <div className="flex items-center justify-between h-14">
           <div className="flex items-center gap-2">
@@ -89,7 +89,7 @@ export function Header() {
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="ghost" className="relative h-8 w-8 sm:h-10 sm:w-10 rounded-full">
-                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 bg-[#A9C46C]">
+                    <Avatar className="h-8 w-8 sm:h-10 sm:w-10 bg-[#F2EDE0]">
                       <AvatarImage 
                         src={session.user?.image || "/images/default-avatar.png"} 
                         alt={session.user?.name || '@user'} 
@@ -99,7 +99,7 @@ export function Header() {
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent className="w-48 sm:w-56 border-2 border-black" align="end" forceMount>
-                  <DropdownMenuLabel className="font-normal border-b-2 border-black">
+                  <DropdownMenuLabel className="font-normal">
                     <div className="flex flex-col space-y-1">
                       <p className="text-xs sm:text-sm font-medium leading-none">{session.user?.name}</p>
                       <p className="text-xs leading-none text-muted-foreground truncate">

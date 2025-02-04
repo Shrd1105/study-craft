@@ -60,7 +60,7 @@ export function SignInForm() {
 
       if (res?.error) {
         toast({
-          variant: "destructive",
+          variant: "error",
           title: "Error",
           description: "Invalid credentials",
         });
@@ -68,6 +68,7 @@ export function SignInForm() {
       }
 
       toast({
+        variant: "success",
         title: "Success",
         description: "Logged in successfully",
       });
@@ -77,7 +78,7 @@ export function SignInForm() {
     } catch (error) {
       console.error(error);
       toast({
-        variant: "destructive",
+        variant: "error",
         title: "Error",
         description: "Something went wrong",
       });
@@ -117,4 +118,4 @@ export function SignInForm() {
       </Button>
     </form>
   );
-} 
+}
