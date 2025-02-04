@@ -29,6 +29,12 @@ export default function SignInPage() {
       <div className="mt-6 sm:mt-8 w-full max-w-md">
         <div className="bg-white px-4 sm:px-10 py-6 sm:py-8 shadow rounded-lg sm:rounded-lg border-2 border-black">
           <SignInForm />
+           <p className="mt-4 text-center text-xs sm:text-sm text-gray-600">
+            Don&apos;t have an account?{' '}
+            <Link href="/register" className="text-[#7fb236] hover:underline">
+              Sign up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
