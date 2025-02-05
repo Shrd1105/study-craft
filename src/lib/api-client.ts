@@ -27,10 +27,24 @@ export const apiClient = {
       },
       body: JSON.stringify({ userId, subject }),
     });
+    
+    const data = await response.json();
+    
     if (!response.ok) {
-      throw new Error('Failed to create resources');
+      // If it's a RESOURCE_EXISTS error, return it directly
+      if (data.error === 'RESOURCE_EXISTS') {
+        return data;
+      }
+      // For other errors, throw them
+      throw {
+        status: response.status,
+        error: data.error,
+        message: data.message,
+        response: { data }
+      };
     }
-    return response.json();
+    
+    return data;
   },
 
   async getStudyPlan(userId: string) {
@@ -53,10 +67,24 @@ export const apiClient = {
       },
       body: JSON.stringify({ userId, subject, examDate }),
     });
+    
+    const data = await response.json();
+    
     if (!response.ok) {
-      throw new Error('Failed to create study plan');
+      // If it's a PLAN_EXISTS error, return it directly
+      if (data.error === 'PLAN_EXISTS') {
+        return data;
+      }
+      // For other errors, throw them
+      throw {
+        status: response.status,
+        error: data.error,
+        message: data.message,
+        response: { data }
+      };
     }
-    return response.json();
+    
+    return data;
   },
 
   async deleteStudyPlan(planId: string) {
@@ -66,10 +94,19 @@ export const apiClient = {
         'Content-Type': 'application/json',
       },
     });
+
+    const data = await response.json();
+    
     if (!response.ok) {
-      throw new Error('Failed to delete plan');
+      throw {
+        status: response.status,
+        error: data.error,
+        message: data.message || 'Failed to delete plan',
+        response: { data }
+      };
     }
-    return response.json();
+    
+    return data;
   },
 
   async deleteCuratedResources(resourceId: string) {

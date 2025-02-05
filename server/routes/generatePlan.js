@@ -42,38 +42,42 @@ router.post('/', async (req, res) => {
     if (!subject?.trim() || !examDate || !userId) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Subject, examDate and userId are required' 
+        error: 'INVALID_INPUT',
+        message: 'Subject, examDate and userId are required' 
       });
     }
 
-    // Check for any existing active plans with same subject
+    // Check for any existing active plans with same subject BEFORE generating new plan
+    const normalizedSubject = subject.trim().toLowerCase().replace(/\s+/g, ' ');
     const existingPlan = await StudyPlan.findOne({
       userId,
-      'overview.subject': { $regex: new RegExp(subject, 'i') }, // Case insensitive match
+      'overview.subject': { $regex: new RegExp(`^${normalizedSubject}$`, 'i') },
       isActive: true
     });
 
     if (existingPlan) {
       return res.status(400).json({
         success: false,
-        error: 'An active plan for this subject already exists'
+        error: 'PLAN_EXISTS',
+        message: `You already have an active study plan for ${subject}. Please check your existing plans or deactivate the current one before creating a new plan.`
       });
     }
 
-    // Generate and save plan
+    // Only generate and save plan if no existing plan found
     const plan = await generatePlan(subject, userId, examDate);
     const savedPlan = await plan.save();
 
-    res.json({ 
+    return res.json({ 
       success: true, 
       plan: savedPlan 
     });
 
   } catch (error) {
     console.error('Error in plan generation:', error);
-    res.status(500).json({ 
+    return res.status(500).json({ 
       success: false, 
-      error: error.message || 'Plan generation failed' 
+      error: 'SERVER_ERROR',
+      message: error.message || 'Plan generation failed' 
     });
   }
 });
@@ -83,25 +87,40 @@ router.delete('/:planId', async (req, res) => {
   try {
     const { planId } = req.params;
     
-    const deletedPlan = await StudyPlan.findByIdAndDelete(planId);
-    
-    if (!deletedPlan) {
-      return res.status(404).json({
+    if (!planId) {
+      return res.status(400).json({
         success: false,
-        error: 'Plan not found'
+        error: 'INVALID_INPUT',
+        message: 'Plan ID is required'
       });
     }
 
-    res.json({
+    // Instead of deleting, we'll update isActive to false
+    const updatedPlan = await StudyPlan.findByIdAndUpdate(
+      planId,
+      { isActive: false },
+      { new: true }
+    );
+    
+    if (!updatedPlan) {
+      return res.status(404).json({
+        success: false,
+        error: 'PLAN_NOT_FOUND',
+        message: 'Study plan not found'
+      });
+    }
+
+    return res.json({
       success: true,
-      message: 'Plan deleted successfully'
+      message: 'Study plan deleted successfully'
     });
 
   } catch (error) {
     console.error('Error deleting plan:', error);
-    res.status(500).json({
+    return res.status(500).json({
       success: false,
-      error: 'Failed to delete plan'
+      error: 'SERVER_ERROR',
+      message: 'Failed to delete plan'
     });
   }
 });

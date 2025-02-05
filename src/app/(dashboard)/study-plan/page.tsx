@@ -23,6 +23,7 @@ export default function StudyPlanPage() {
   const fetchPlans = useCallback(async () => {
     if (!session?.user?.id) return;
     try {
+      setLoading(true);
       const data = await apiClient.getStudyPlan(session.user.id);
       if (data.error) {
         console.error("API returned error:", data.error);
@@ -36,16 +37,11 @@ export default function StudyPlanPage() {
       }
       
       if (data.plans && Array.isArray(data.plans)) {
-        // Validate the structure of each plan
-        const validPlans = data.plans.filter((plan: StudyPlan) => {
-          return plan && 
-                 plan._id && 
-                 plan.overview &&
-                 Array.isArray(plan.weeklyPlans);
-        });
-        
-        console.log("Valid plans:", validPlans);
-        setStoredPlans(validPlans);
+        // Sort plans by _id as a fallback for creation time
+        const sortedPlans = data.plans.sort((a: StudyPlan, b: StudyPlan) => 
+          b._id.localeCompare(a._id)
+        );
+        setStoredPlans(sortedPlans);
       } else {
         console.error("Invalid plans data structure:", data);
         setStoredPlans([]);
@@ -67,37 +63,33 @@ export default function StudyPlanPage() {
     fetchPlans();
   }, [fetchPlans]);
 
-  const handlePlanDelete = (planId: string) => {
-    setStoredPlans(plans => plans.filter(plan => plan._id !== planId));
-    toast({
-      variant: "success",
-      title: "Success",
-      description: "Study plan deleted successfully."
-    });
+  const handlePlanGenerated = () => {
+    // Refresh the plans list after a short delay
+    setTimeout(() => {
+      fetchPlans();
+    }, 500);
   };
 
-  const handlePlanGenerated = async (newPlan: Partial<StudyPlan>) => {
-    if (!session?.user?.id || !newPlan.overview) return;
-    
+  const handlePlanDelete = async (planId: string) => {
     try {
-      await apiClient.createStudyPlan(
-        session.user.id,
-        typeof newPlan.overview === 'string' ? newPlan.overview : newPlan.overview.subject,
-        new Date().toISOString()
-      );
-      toast({
-        variant: "success",
-        title: "Success",
-        description: "Study plan created successfully."
-      });
-      // Refresh the plans list
-      fetchPlans();
-    } catch (error) {
-      console.error("Error creating plan:", error);
+      const response = await apiClient.deleteStudyPlan(planId);
+      if (response.success) {
+        // Update the local state to remove the deactivated plan
+        setStoredPlans(plans => plans.filter(plan => plan._id !== planId));
+        toast({
+          variant: "success",
+          title: "Success",
+          description: response.message || "Study plan deactivated successfully."
+        });
+      } else {
+        throw new Error(response.message || 'Failed to deactivate plan');
+      }
+    } catch (error: unknown) {
+      console.error("Error deactivating plan:", error);
       toast({
         variant: "error",
         title: "Error",
-        description: "Failed to create study plan. Please try again."
+        description: error instanceof Error ? error.message : "Failed to deactivate study plan. Please try again."
       });
     }
   };
@@ -122,46 +114,41 @@ export default function StudyPlanPage() {
       </div>
 
       {/* Stored Plans Section */}
-      {loading ? (
-        <div className="mt-8 sm:mt-12">
-          <Separator className="my-6 sm:my-8" />
-          <Skeleton className="h-6 sm:h-8 w-36 sm:w-48 mb-4 sm:mb-6" />
+      <div id="stored-plans" className="mt-8 sm:mt-12">
+        <Separator className="my-6 sm:my-8" />
+        <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Study Plans</h2>
+        
+        {loading ? (
           <div className="space-y-4 sm:space-y-6">
             <Skeleton className="h-[150px] sm:h-[200px] w-full" />
             <Skeleton className="h-[150px] sm:h-[200px] w-full" />
           </div>
-        </div>
-      ) : (
-        <div className="mt-8 sm:mt-12">
-          <Separator className="my-6 sm:my-8" />
-          <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Study Plans</h2>
-          {storedPlans.length > 0 ? (
-            <>
-              <div className="space-y-4 sm:space-y-6">
-                {currentPlans.map((plan) => (
-                  <StoredPlan
-                    key={plan._id}
-                    plan={plan}
-                    onDelete={handlePlanDelete}
-                  />
-                ))}
-              </div>
-              {totalPages > 1 && (
-                <PaginationNav
-                  currentPage={currentPage}
-                  totalPages={totalPages}
-                  onPageChange={setCurrentPage}
+        ) : storedPlans.length > 0 ? (
+          <>
+            <div className="space-y-4 sm:space-y-6">
+              {currentPlans.map((plan) => (
+                <StoredPlan
+                  key={plan._id}
+                  plan={plan}
+                  onDelete={handlePlanDelete}
                 />
-              )}
-            </>
-          ) : (
-            <div className="text-center py-8 text-gray-500">
-              <p>You haven&apos;t created any study plans yet.</p>
-              <p className="mt-2">Use the form above to create your first study plan!</p>
+              ))}
             </div>
-          )}
-        </div>
-      )}
+            {totalPages > 1 && (
+              <PaginationNav
+                currentPage={currentPage}
+                totalPages={totalPages}
+                onPageChange={setCurrentPage}
+              />
+            )}
+          </>
+        ) : (
+          <div className="text-center py-8 text-gray-500">
+            <p>You haven&apos;t created any study plans yet.</p>
+            <p className="mt-2">Use the form above to create your first study plan!</p>
+          </div>
+        )}
+      </div>
     </div>
   );
 }

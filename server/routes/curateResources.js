@@ -41,37 +41,80 @@ router.post('/', async (req, res) => {
     if (!subject?.trim() || !userId) {
       return res.status(400).json({ 
         success: false, 
-        error: 'Subject and userId are required' 
+        error: 'INVALID_INPUT',
+        message: 'Subject and userId are required' 
       });
     }
 
-    // Check if resources already exist for this subject and user
-    const existingResources = await CuratedResource.find({ 
+    // Normalize the subject string
+    const normalizedSubject = subject.trim().toLowerCase().replace(/\s+/g, ' ');
+
+    // Check for existing resources with case-insensitive matching
+    const existingResources = await CuratedResource.findOne({
       userId,
-      subject: subject.trim().toLowerCase()
+      topic: { $regex: new RegExp(`^${normalizedSubject}$`, 'i') }
     });
 
-    if (existingResources.length > 0) {
+    if (existingResources) {
       return res.status(400).json({
         success: false,
-        error: 'Resources already exist for this subject'
+        error: 'RESOURCE_EXISTS',
+        message: `You already have curated resources for "${subject}". Please check your existing resources.`
       });
     }
 
     // If no existing resources, generate new ones
     const searchData = await searchTavily(subject);
-    const curatedResources = await curateResources(searchData, subject);
-    const savedResources = await saveResources(userId, subject, curatedResources);
     
-    res.json({ 
-      success: true, 
-      resources: savedResources 
+    if (!searchData || !searchData.results) {
+      return res.status(500).json({
+        success: false,
+        error: 'SEARCH_FAILED',
+        message: 'Failed to search for resources. Please try again.'
+      });
+    }
+
+    const curatedData = await curateResources(searchData, subject);
+    
+    if (!curatedData || !curatedData.resources) {
+      return res.status(500).json({
+        success: false,
+        error: 'CURATION_FAILED',
+        message: 'Failed to curate resources. Please try again.'
+      });
+    }
+
+    // Validate and transform resources to match schema
+    const validatedResources = curatedData.resources.map(resource => ({
+      title: resource.title || 'Untitled Resource',
+      link: resource.url || '#', // Map url to link
+      type: resource.format || 'website',
+      description: resource.description || 'No description available',
+      benefits: resource.benefits || ['Resource for learning ' + subject]
+    }));
+
+    // Create new resource document
+    const newResource = new CuratedResource({
+      userId,
+      topic: normalizedSubject, // Use topic instead of subject
+      resources: validatedResources,
+      lastUpdated: new Date()
     });
+
+    const savedResource = await newResource.save();
+
+    return res.json({
+      success: true,
+      message: 'Resources curated successfully',
+      resources: savedResource
+    });
+
   } catch (error) {
     console.error('Error in resource curation:', error);
-    res.status(500).json({ 
-      success: false, 
-      error: 'Resource curation failed' 
+    return res.status(500).json({
+      success: false,
+      error: 'SERVER_ERROR',
+      message: error.message || 'An error occurred while curating resources. Please try again.'
     });
   }
 });

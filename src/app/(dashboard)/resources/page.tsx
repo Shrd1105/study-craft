@@ -89,12 +89,58 @@ export default function ResourcesPage() {
       });
       // Refresh resources after creation
       fetchResources();
-    } catch (error) {
+    } catch (error: unknown) {
       console.error('Error creating resources:', error);
+      
+      // Type guard to check if error is an object with status property
+      if (error && typeof error === 'object' && 'status' in error) {
+        const errorObj = error as { status: number; retryAfter?: number };
+        // Handle rate limit errors
+        if (errorObj.status === 429 || errorObj.status === 413) {
+          const retryAfter = errorObj.retryAfter || 60;
+          const minutes = Math.ceil(retryAfter / 60);
+          toast({
+            variant: "error",
+            title: "Rate Limit Exceeded",
+            description: `Please try again in ${minutes} minute${minutes > 1 ? 's' : ''}. Our AI service has reached its limit.`
+          });
+          return;
+        }
+      }
+
+      // Type guard for response error
+      if (error && typeof error === 'object' && 'response' in error) {
+        const responseError = error as { 
+          response?: { 
+            data?: { 
+              error?: string; 
+              message?: string; 
+            } 
+          };
+          message?: string;
+        };
+
+        if (responseError.response?.data?.error === 'RESOURCE_EXISTS') {
+          toast({
+            variant: "default",
+            title: "Resources Already Exist",
+            description: responseError.response.data.message || "You already have resources for this subject."
+          });
+          
+          // Scroll to existing resources section
+          const resourcesSection = document.getElementById('stored-resources');
+          if (resourcesSection) {
+            resourcesSection.scrollIntoView({ behavior: 'smooth' });
+          }
+          return;
+        }
+      }
+
+      // Default error handling
       toast({
         variant: "error",
         title: "Error",
-        description: "Failed to create resources. Please try again."
+        description: error instanceof Error ? error.message : "Failed to create resources. Please try again."
       });
     }
   };
@@ -128,7 +174,7 @@ export default function ResourcesPage() {
           </div>
         </div>
       ) : (
-        <div className="mt-8 sm:mt-12">
+        <div id="stored-resources" className="mt-8 sm:mt-12">
           <Separator className="my-6 sm:my-8" />
           <h2 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Your Curated Resources</h2>
           {storedResources.length > 0 ? (

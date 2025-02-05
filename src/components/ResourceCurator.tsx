@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Loader2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { cn } from "@/lib/utils";
 
 interface Resource {
   title: string;
@@ -27,27 +28,29 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!subject.trim()) return;
+    setError(null);
+    
+    if (!subject.trim()) {
+      setError("Please enter a subject");
+      return;
+    }
 
     setLoading(true);
-    setError(null);
     try {
-      await onCreateResources(subject);
-      setSubject(""); // Clear input after successful submission
+      await onCreateResources(subject.trim());
+      setSubject("");
       toast({
         variant: "success",
         title: "Success",
         description: "Resources generated successfully",
       });
-    } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'An unexpected error occurred';
-      setError(errorMessage);
-      toast({
-        variant: "error",
-        title: "Error",
-        description: errorMessage,
-      });
-      return; // Return early to prevent showing success state
+    } catch (err: unknown) {
+      if (typeof err === 'object' && err !== null && 'response' in err && 
+          typeof err.response === 'object' && err.response !== null && 'data' in err.response &&
+          typeof err.response.data === 'object' && err.response.data !== null && 'error' in err.response.data &&
+          err.response.data.error === 'RESOURCE_EXISTS' && 'message' in err.response.data) {
+        setError(err.response.data.message as string);
+      }
     } finally {
       setLoading(false);
     }
@@ -55,39 +58,41 @@ export default function ResourceCurator({ onCreateResources }: ResourceCuratorPr
 
   return (
     <div className="w-full bg-[#F2EDE0] p-4 sm:p-6 border-2 border-b-4 border-r-4 border-black rounded-xl">
-      <div className="w-full max-w-3xl mx-auto">
-        <form onSubmit={handleSubmit} className="space-y-4 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-4">
+      <div className="max-w-6xl mx-auto">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+          <div className="flex-1">
             <Input
               type="text"
               placeholder="Enter a topic to find learning resources..."
               value={subject}
-              onChange={(e) => setSubject(e.target.value)}
-              className="flex-1 bg-white border-2 border-b-4 border-r-4 border-black text-gray-900 placeholder-gray-400 text-base sm:text-lg p-4 sm:p-6 rounded-xl"
-              disabled={loading}
-            />
-            <Button 
-              type="submit" 
-              disabled={loading || !subject.trim()} 
-              className="w-full sm:w-auto py-6 sm:py-0"
-            >
-              {loading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  Generating...
-                </>
-              ) : (
-                "Generate Resources"
+              onChange={(e) => {
+                setSubject(e.target.value);
+                setError(null);
+              }}
+              className={cn(
+                "bg-white border-2 border-black text-gray-900 placeholder-gray-500 text-base sm:text-lg p-6 rounded-xl h-auto",
+                error && "border-red-500 focus-visible:ring-red-500"
               )}
-            </Button>
+            />
+            {error && (
+              <p className="text-sm text-red-500 mt-1">{error}</p>
+            )}
           </div>
+          <Button
+            type="submit"
+            disabled={loading || !subject.trim()}
+            className="w-full sm:w-auto flex justify-center items-center text-base sm:text-lg py-8 mt-1 px-8 rounded-xl"
+          >
+            {loading ? (
+              <>
+                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                Generating...
+              </>
+            ) : (
+              "Generate Resources"
+            )}
+          </Button>
         </form>
-
-        {error && (
-          <div className="text-red-500 mt-4 p-3 sm:p-4 bg-red-50 rounded-lg border-2 border-red-200 text-sm sm:text-base">
-            {error}
-          </div>
-        )}
 
         {!error && resources.length > 0 && (
           <ScrollArea className="h-[calc(100vh-400px)] sm:h-[calc(100vh-300px)] w-full">

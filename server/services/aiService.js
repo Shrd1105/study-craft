@@ -94,6 +94,14 @@ async function curateResources(searchData, subject) {
   }
 
   try {
+    // Reduce the search results to minimize token usage
+    const limitedResults = searchData.results?.slice(0, 5) || [];
+    const summarizedContext = limitedResults.map(r => ({
+      title: r.title,
+      url: r.url,
+      description: r.description?.slice(0, 100) // Limit description length
+    }));
+
     const completion = await groq.chat.completions.create({
       model: "llama-3.3-70b-versatile",
       messages: [
@@ -109,9 +117,8 @@ async function curateResources(searchData, subject) {
           role: "user",
           content: `Analyze and curate exactly 5 of the most valuable and high-quality free learning resources for ${subject}.
           
-          Search Context:
-          ${searchData.answer ? `${searchData.answer}\n` : ''}
-          ${searchData.results ? `Additional Results:\n${JSON.stringify(searchData.results, null, 2)}\n` : ''}
+          Context:
+          ${JSON.stringify(summarizedContext, null, 2)}
           
           Requirements:
           1. Resources must be completely free to access
@@ -127,20 +134,19 @@ async function curateResources(searchData, subject) {
                 "title": "Resource name (include platform name if relevant)",
                 "url": "Direct URL to the resource",
                 "description": "Detailed 2-3 sentence description of what the resource offers",
+                "format": "Type of resource (e.g., Video Course, Interactive Tutorial, Documentation, etc.)",
                 "benefits": [
                   "Specific benefit or feature that makes this resource valuable",
                   "Another unique advantage of this resource",
                   "Why this resource is particularly good for learning this subject"
-                ],
-                "format": "Type of resource (e.g., Video Course, Interactive Tutorial, Documentation, etc.)",
-                "difficulty_level": "Beginner/Intermediate/Advanced"
+                ]
               }
             ]
           }`
         }
       ],
       temperature: 0.7,
-      max_completion_tokens: 2048,
+      max_tokens: 2000,
       top_p: 1,
       stream: false,
       response_format: { type: "json_object" }
@@ -153,11 +159,32 @@ async function curateResources(searchData, subject) {
       throw new Error('Invalid resource format received from AI');
     }
 
+    // Ensure each resource has all required fields
+    const validatedResources = result.resources.map(resource => ({
+      title: resource.title || `${subject} Learning Resource`,
+      url: resource.url || '#',
+      description: resource.description || `A curated resource for learning ${subject}`,
+      format: resource.format || 'website',
+      benefits: resource.benefits || [`Learn ${subject} effectively`]
+    }));
+
+    const finalResult = { resources: validatedResources };
+
     // Cache the result
-    cache.set(cacheKey, result);
-    return result;
+    cache.set(cacheKey, finalResult);
+    return finalResult;
   } catch (error) {
     console.error('Groq error:', error);
+    // Check if it's a rate limit error
+    if (error.status === 429 || error.status === 413) {
+      const retryAfter = error.headers?.['retry-after'] || 60;
+      throw {
+        status: error.status,
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter
+      };
+    }
     throw error;
   }
 }
@@ -214,7 +241,7 @@ async function generatePlan(subject, userId, examDate) {
         }
       ],
       temperature: 0.7,
-      max_completion_tokens: 1024,
+      max_tokens: 2000,
       top_p: 1,
       stream: false,
       response_format: { type: "json_object" }
@@ -250,11 +277,19 @@ async function generatePlan(subject, userId, examDate) {
       lastUpdated: new Date()
     });
 
-    // Cache the result
     cache.set(cacheKey, plan);
     return plan;
   } catch (error) {
     console.error('Groq error:', error);
+    if (error.status === 429 || error.status === 413) {
+      const retryAfter = error.headers?.['retry-after'] || 60;
+      throw {
+        status: error.status,
+        error: 'Rate limit exceeded',
+        message: 'Too many requests. Please try again later.',
+        retryAfter
+      };
+    }
     throw error;
   }
 }
