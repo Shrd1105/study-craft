@@ -1,4 +1,4 @@
-# Mind Mentor: AI-Powered Study Assistant 
+# Study Craft: AI-Powered Study Assistant 
 
 ## Table of Contents
 - [Overview](#overview)
@@ -7,20 +7,13 @@
 - [Installation](#installation)
 - [API Integration](#api-integration)
 - [Usage Guide](#usage-guide)
-- [Contributing](#contributing)
 - [License](#license)
-
-## Demo
-
-
-
-https://github.com/user-attachments/assets/1ea26947-1dca-408d-9741-b24c3429944a
 
 
 
 ## Overview
 
-Mind Mentor is an intelligent study companion that leverages AI to transform the learning experience. It combines personalized study planning, resource curation, and interactive assistance to help students achieve their academic goals efficiently.
+Study Craft is an intelligent study companion that leverages AI to transform the learning experience. It combines personalized study planning, resource curation, and interactive assistance to help students achieve their academic goals efficiently.
 
 ## Key Features
 
@@ -47,10 +40,6 @@ Mind Mentor is an intelligent study companion that leverages AI to transform the
   - Documentation
   - Practice exercises
   - Academic papers
-- **Smart Filtering**
-  - Difficulty level categorization
-  - Format-based organization
-  - Topic relevance ranking
 
 ### 3. User Experience 🎯
 - **Modern Interface**
@@ -94,15 +83,16 @@ cd mind-mentor
 
 2. Install dependencies for both frontend and backend:
 ```bash
+cd frontend
 npm install
 
-cd server
+cd backend
 npm install
 ```
 
 3. Set up environment variables:
 
-Create `.env.local` file with the following variables:
+Create `.env.local` in frontend directory with the following variables:
 
 ```env
 # Frontend Environment Variables
@@ -118,7 +108,7 @@ GROQ_API_KEY=your-groq-api-key
 TAVILY_API_KEY=your-tavily-api-key
 ```
 
-Create `.env` file in server directory:
+Create `.env` file in backend directory:
 
 ```env
 PORT=5000
@@ -177,15 +167,6 @@ Used for:
 4. Export notes in various formats
 5. Access your notes across devices
 
-## Contributing
-
-We welcome contributions! Please follow these steps:
-
-1. Fork the repository
-2. Create a feature branch
-3. Commit your changes
-4. Push to your branch
-5. Create a Pull Request
 
 ## License
 
@@ -193,4 +174,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 ---
 
-Built with 💡 by Kartik Labhshetwar
+Built by Shraddha Manikpuri
