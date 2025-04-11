@@ -77,8 +77,8 @@ Study Craft is an intelligent study companion that leverages AI to transform the
 
 1. Clone the repository:
 ```bash
-git clone https://github.com/KartikLabhshetwar/mind-mentor
-cd mind-mentor
+git clone https://github.com/Shrd1105/study-craft/tree/main
+cd study-craft
 ```
 
 2. Install dependencies for both frontend and backend:
