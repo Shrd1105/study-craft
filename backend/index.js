@@ -28,7 +28,7 @@ app.use('/api/study-plan', aiRateLimiter);
 
 // Basic health check
 app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Mind Mentor API is running' });
+  res.json({ status: 'ok', message: 'Study Craft API is running' });
 });
 
 // Connect to MongoDB
