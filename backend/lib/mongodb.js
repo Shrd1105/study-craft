@@ -1,4 +1,4 @@
-import mongoose from 'mongoose';
+const mongoose = require('mongoose');
 
 const MONGODB_URI = process.env.MONGODB_URI;
 
@@ -24,6 +24,9 @@ async function connectDB() {
       useUnifiedTopology: true,
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
+      maxPoolSize: 10,
+      minPoolSize: 5,
+      connectTimeoutMS: 10000,
     };
 
     cached.promise = mongoose.connect(MONGODB_URI, opts).then((mongoose) => {
@@ -41,4 +44,8 @@ async function connectDB() {
   return cached.conn;
 }
 
-export default connectDB; 
+// Export both the connection function and mongoose instance
+module.exports = {
+  connectDB,
+  mongoose
+}; 

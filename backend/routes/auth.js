@@ -1,7 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
-const connectDB = require('../lib/mongodb');
+const { connectDB } = require('../lib/mongodb');
 const router = express.Router();
 
 // Login route

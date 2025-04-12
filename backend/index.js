@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const mongoose = require('mongoose');
+const { connectDB, mongoose } = require('./lib/mongodb');
 const { aiRateLimiter } = require('./services/aiService');
 require('dotenv').config();
 
@@ -28,29 +28,28 @@ app.use('/api/resources', aiRateLimiter);
 app.use('/api/study-plan', aiRateLimiter);
 
 // Basic health check
-app.get('/', (req, res) => {
-  res.json({ status: 'ok', message: 'Study Craft API is running' });
+app.get('/', async (req, res) => {
+  try {
+    // Check MongoDB connection
+    const isConnected = mongoose.connection.readyState === 1;
+    
+    res.json({ 
+      status: 'ok', 
+      message: 'Study Craft API is running',
+      mongoDB: isConnected ? 'connected' : 'disconnected'
+    });
+  } catch (error) {
+    console.error('Health check error:', error);
+    res.status(500).json({ 
+      status: 'error', 
+      message: 'Service is running but MongoDB connection failed',
+      error: error.message 
+    });
+  }
 });
 
-// Connect to MongoDB with retry logic
-const connectWithRetry = async () => {
-  try {
-    await mongoose.connect(process.env.MONGODB_URI, {
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      serverSelectionTimeoutMS: 5000,
-      socketTimeoutMS: 45000,
-    });
-    console.log('Connected to MongoDB');
-  } catch (error) {
-    console.error('MongoDB connection error:', error);
-    // Retry connection after 5 seconds
-    setTimeout(connectWithRetry, 5000);
-  }
-};
-
-// Initial connection
-connectWithRetry();
+// Connect to MongoDB
+connectDB().catch(console.error);
 
 // Routes
 app.use('/auth', authRouter);
