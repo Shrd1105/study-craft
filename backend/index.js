@@ -6,6 +6,7 @@ require('dotenv').config();
 
 const curateResourcesRouter = require('./routes/curateResources');
 const generatePlanRouter = require('./routes/generatePlan');
+const authRouter = require('./routes/auth');
 
 const app = express();
 const port = process.env.PORT || 5000;
@@ -36,7 +37,8 @@ mongoose.connect(process.env.MONGODB_URI)
   .then(() => console.log('Connected to MongoDB'))
   .catch((err) => console.error('MongoDB connection error:', err));
 
-// Remove /api prefix from routes since it's already in the frontend URL
+// Routes
+app.use('/auth', authRouter);
 app.use('/generate-plan', generatePlanRouter);
 app.use('/curate-resources', curateResourcesRouter);
 

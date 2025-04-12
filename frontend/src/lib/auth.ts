@@ -1,8 +1,5 @@
 import { AuthOptions, DefaultSession } from "next-auth";
 import CredentialsProvider from "next-auth/providers/credentials";
-import { connectMongoDB } from "@/lib/mongodb";
-import User from "@/models/user";
-import bcrypt from "bcryptjs";
 
 // Extend the built-in session types
 declare module "next-auth" {
@@ -20,6 +17,11 @@ declare module "next-auth/jwt" {
   }
 }
 
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || 
+  (process.env.NODE_ENV === 'production' 
+    ? 'https://study-craft-backend.vercel.app' 
+    : 'http://localhost:5000');
+
 export const authOptions: AuthOptions = {
   providers: [
     CredentialsProvider({
@@ -34,23 +36,31 @@ export const authOptions: AuthOptions = {
         }
 
         try {
-          await connectMongoDB();
-          const user = await User.findOne({ email: credentials.email });
+          const response = await fetch(`${API_BASE_URL}/auth/login`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: credentials.email,
+              password: credentials.password,
+            }),
+          });
 
-          if (!user) {
+          if (!response.ok) {
             return null;
           }
 
-          const passwordsMatch = await bcrypt.compare(credentials.password, user.password);
-
-          if (!passwordsMatch) {
+          const data = await response.json();
+          
+          if (!data.user) {
             return null;
           }
 
           return {
-            id: user._id.toString(),
-            name: user.name,
-            email: user.email,
+            id: data.user._id,
+            name: data.user.name,
+            email: data.user.email,
           };
         } catch (error) {
           console.error("Error during authentication:", error);
