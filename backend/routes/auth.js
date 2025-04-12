@@ -1,6 +1,7 @@
 const express = require('express');
 const bcrypt = require('bcryptjs');
 const User = require('../models/user');
+const connectDB = require('../lib/mongodb');
 const router = express.Router();
 
 // Login route
@@ -15,6 +16,9 @@ router.post('/login', async (req, res) => {
         message: 'Email and password are required'
       });
     }
+
+    // Connect to MongoDB
+    await connectDB();
 
     const user = await User.findOne({ email });
 
@@ -71,6 +75,9 @@ router.post('/register', async (req, res) => {
         message: 'Name, email, and password are required'
       });
     }
+
+    // Connect to MongoDB
+    await connectDB();
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });

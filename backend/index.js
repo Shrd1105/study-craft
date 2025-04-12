@@ -32,10 +32,25 @@ app.get('/', (req, res) => {
   res.json({ status: 'ok', message: 'Study Craft API is running' });
 });
 
-// Connect to MongoDB
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch((err) => console.error('MongoDB connection error:', err));
+// Connect to MongoDB with retry logic
+const connectWithRetry = async () => {
+  try {
+    await mongoose.connect(process.env.MONGODB_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+      serverSelectionTimeoutMS: 5000,
+      socketTimeoutMS: 45000,
+    });
+    console.log('Connected to MongoDB');
+  } catch (error) {
+    console.error('MongoDB connection error:', error);
+    // Retry connection after 5 seconds
+    setTimeout(connectWithRetry, 5000);
+  }
+};
+
+// Initial connection
+connectWithRetry();
 
 // Routes
 app.use('/auth', authRouter);
@@ -51,7 +66,13 @@ app.use((err, req, res, next) => {
   });
 });
 
-app.listen(port, '0.0.0.0', () => {
-  console.log(`Server is running on port ${port}`);
-  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
-});
+// For Vercel serverless functions
+module.exports = app;
+
+// For local development
+if (process.env.NODE_ENV !== 'production') {
+  app.listen(port, '0.0.0.0', () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  });
+}
