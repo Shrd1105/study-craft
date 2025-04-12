@@ -1,36 +1,32 @@
-import { getToken } from "next-auth/jwt";
+import { withAuth } from "next-auth/middleware";
 import { NextResponse } from "next/server";
-import type { NextRequest } from "next/server";
 
-export async function middleware(request: NextRequest) {
-  const path = request.nextUrl.pathname;
-
-  const isPublicPath = path === "/" || path === "/register" || path === "/signin";
-  const token = await getToken({
-    req: request,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
-
-  if (isPublicPath && token) {
-    return NextResponse.redirect(new URL("/home", request.url));
+export default withAuth(
+  function middleware(req) {
+    // Add any additional middleware logic here
+    return NextResponse.next();
+  },
+  {
+    callbacks: {
+      authorized: ({ token }) => !!token,
+    },
+    pages: {
+      signIn: "/signin",
+    },
   }
-
-  if (!isPublicPath && !token) {
-    return NextResponse.redirect(new URL("/signin", request.url));
-  }
-}
+);
 
 export const config = {
   matcher: [
-    "/",
-    "/register",
-    "/signin",
-    "/home",
-    "/study-plan",
-    "/resources",
-    "/timer",
-    "/analytics",
-    "/settings",
-    "/profile",
+    /*
+     * Match all request paths except for the ones starting with:
+     * - api (API routes)
+     * - _next/static (static files)
+     * - _next/image (image optimization files)
+     * - favicon.ico (favicon file)
+     * - signin (signin page)
+     * - signup (signup page)
+     */
+    "/((?!api|_next/static|_next/image|favicon.ico|signin|signup).*)",
   ],
 }; 
